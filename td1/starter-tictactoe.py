@@ -37,12 +37,39 @@ def getresult(b):
         return 0
 
 
-board = Tictactoe.Board()
-print(board)
 
-### Deroulement d'une partie aléatoire
-deroulementRandom(board)
+"""
+1. En utilisant les méthodes legal_moves() et is_game_over(), proposer une méthode permettant
+d’explorer toutes les parties possibles au Morpion (lorsque X commence). Combien y-a-t-il de parties ?
+Combien votre arbre de recherche a-t-il de noeuds ? Combien de temps faut-il pour tout explorer ?
+"""
+def possibleGamesAux(b ,games,nodes):
+    if b.is_game_over():
+        games.append(1)
+    else:
+        for m in b.legal_moves():
+            b.push(m)
+            nodes.append(1)
+            possibleGamesAux(b,games,nodes)
+            b.pop()
+def possibleGames(b):
+    game=[]
+    nodes=[]
+    possibleGamesAux(b,game,nodes)
+    return len(game),len(nodes)
 
-print("Apres le match, chaque coup est défait (grâce aux pop()): on retrouve le plateau de départ :")
-print(board)
+def main ():
+    board = Tictactoe.Board()
+    # print(board)
+    # ### Deroulement d'une partie aléatoire
+    # deroulementRandom(board)
+    # print("Apres le match, chaque coup est défait (grâce aux pop()): on retrouve le plateau de départ :")
+    # print(board)
+    start = time.time()
+    g,n = possibleGames(board)
+    end = time.time()
+    print(f"we have {g} games and {n} nodes \ntime of execution {(end -start)} s");
+main()
+
+
 
