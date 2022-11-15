@@ -60,18 +60,16 @@ def possibleGames(b):
     return len(game),len(nodes)
 
 def existWinningStrategyAux(b : Tictactoe.Board, winningGames = None):
-    if b.is_game_over() and getresult(b) == 1 :
-        if(winningGames == None):
-            return True
-        else:
-            winningGames.append(1)
+    if b.is_game_over() :
+        return getresult(b) == 1
     else:
         for m in b.legal_moves():
+            isEnnemi = b._nextPlayer == "_O"
             b.push(m)
-            if existWinningStrategyAux(b,winningGames):
-                return True
+            if(isEnnemi and not existWinningStrategyAux(b,winningGames)):
+                return False
             b.pop()
-        return False
+        return True
 def existWinningStrategy(b : Tictactoe.Board ):
     return existWinningStrategyAux(b)
 
@@ -87,7 +85,7 @@ def main ():
     # g,n = possibleGames(board)
     end = time.time()
     print("there is", " not " if not isThere else " ")
-    print(f"time : {(end -start)} s")
+    print(f"time : {(end -start)}  s")
     # print(f"we have {g} games and {n} nodes \ntime of execution {(end -start)} s");
 main()
 
