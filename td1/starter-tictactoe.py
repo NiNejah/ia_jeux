@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import math
 import time
 import Tictactoe 
 from random import randint,choice
@@ -59,34 +59,78 @@ def possibleGames(b):
     possibleGamesAux(b,game,nodes)
     return len(game),len(nodes)
 
+#TODO : improve it
 def existWinningStrategyAux(b : Tictactoe.Board, winningGames = None):
     if b.is_game_over() :
         return getresult(b) == 1
     else:
+        exist = True
         for m in b.legal_moves():
-            isEnnemi = b._nextPlayer == "_O"
             b.push(m)
-            if(isEnnemi and not existWinningStrategyAux(b,winningGames)):
-                return False
+            exist = exist and existWinningStrategyAux(b,winningGames)
             b.pop()
-        return True
+        return exist
 def existWinningStrategy(b : Tictactoe.Board ):
     return existWinningStrategyAux(b)
 
-def main ():
-    board = Tictactoe.Board()
-    # print(board)
-    # ### Deroulement d'une partie aléatoire
-    # deroulementRandom(board)
-    # print("Apres le match, chaque coup est défait (grâce aux pop()): on retrouve le plateau de départ :")
-    # print(board)
+
+
+
+
+# MinMax :
+def minMax(board:Tictactoe.Board):
+    if board.is_game_over() :
+        return getresult(board)
+    if(board._nextPlayer == board._X):
+        maxEval = - math.inf
+        for m in board.legal_moves():
+            board.push(m)
+            eval = minMax(board)
+            board.pop()
+            maxEval = max(eval,maxEval)
+        return maxEval
+    else:
+        minEval = math.inf
+        for m in board.legal_moves():
+            board.push(m)
+            eval = minMax(board)
+            board.pop()
+            minEval = min(eval,minEval)
+        return minEval
+
+
+
+## Test function :
+def deroulementRandomTest(board):
+    print(board)
+    ### Deroulement d'une partie aléatoire
+    deroulementRandom(board)
+    print("Apres le match, chaque coup est défait (grâce aux pop()): on retrouve le plateau de départ :")
+    print(board)
+
+def possibleGamesTest(board):
+    start = time.time()
+    g,n = possibleGames(board)
+    end = time.time()
+    print(f"we have {g} games and {n} nodes \ntime of execution {(end -start)} s");
+
+def existWinningStrategyTest(board):
     start = time.time()
     isThere = existWinningStrategy(board)
-    # g,n = possibleGames(board)
     end = time.time()
-    print("there is", " not " if not isThere else " ")
-    print(f"time : {(end -start)}  s")
-    # print(f"we have {g} games and {n} nodes \ntime of execution {(end -start)} s");
+    print("there is", "not " if not isThere else "")
+    print(f"time : {(end -start)} s")
+
+def minMaxTest(board):
+    for i in range (10):
+        winner = minMax(board)
+        print(winner)
+    print(board)
+def main():
+    board = Tictactoe.Board()
+    # existWinningStrategyTest(board)
+    # minMaxTest(board)
+
 main()
 
 
