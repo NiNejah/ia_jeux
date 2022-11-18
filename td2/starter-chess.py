@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import math
 import time
 import chess
 from random import randint, choice
@@ -56,18 +57,87 @@ def evalue( board , turn = "AMI"):
         # upper AMI ;
         if(l==u): scour += value[l] + (pos * posfac)
         # lower ENNEMI :
-        # TODO : fix - (pos * posfac)
-        else: scour -= value[u] - (pos * posfac)
+        else: scour -= value[u] - ((1-pos ) * posfac)
     return scour
+
+##### ENNEMI :
+def minMax(b : chess.Board , depth = 3):
+    if depth == 0:
+     return evalue(b)
+    if b.is_game_over():
+        return evalueGameOver(b)
+    pire = math.inf
+    for m in b.generate_legal_moves():
+        b.push(m)
+        eval = maxMin(b,depth-1)
+        b.pop()
+        pire = min(eval,pire)
+    return pire
+
+def maxMin(b : chess.Board , depth = 3 ):
+    if depth == 0:
+     return evalue(b)
+    if b.is_game_over():
+        return evalueGameOver(b)
+    meilleur = - math.inf
+    for m in b.generate_legal_moves():
+        b.push(m)
+        eval = minMax(b,depth-1)
+        b.pop()
+        meilleur = max (meilleur ,eval)
+    return meilleur
+
+def evalueGameOver(b : chess.Board):
+    if b.result() == "1-0":
+        return 500
+    elif b.result() == "0-1":
+        return -500
+    else:
+        return 0
+
+def amiMove(b : chess.Board , depth = 3):
+    meilleurMove = None
+    meilleur = 0
+    for m in b.generate_legal_moves():
+        b.push(m)
+        evl = maxMin(b,depth)
+        b.pop()
+        if ( evl > meilleur) or (meilleurMove == None):
+            meilleur = evl
+            meilleurMove = m
+    return meilleurMove
+def ennemiMove(b : chess.Board , depth = 3):
+    pireMove = None
+    pire = 0
+    for m in b.generate_legal_moves():
+        b.push(m)
+        evl = minMax(b,depth)
+        b.pop()
+        if ( evl < pire) or (pireMove == None):
+            pire = evl
+            pireMove = m
+    return pireMove
+
+def playGame(b : chess.Board):
+    while(not b.is_game_over()):
+        b.push(amiMove(b,1))
+        print(b)
+        print("------------------------")
+        b.push(ennemiMove(b,3))
+        print(b)
+        print("------------------------")
+
+def possibleGalmesTest(b):
+    for depth in range(1,10):
+        start = time.time()
+        g,n = possibleGames(b ,depth)
+        end = time.time()
+        print(f"for depth = {depth} we have {g} games and {n} nodes \ntime of execution {(end -start)} s");
+        print("--------------------------")
 
 def main():
     board = chess.Board()
     # deroulementRandom(board)
-    for depth in range(1,10):
-        start = time.time()
-        g,n = possibleGames(board ,depth)
-        end = time.time()
-        print(f"for depth = {depth} we have {g} games and {n} nodes \ntime of execution {(end -start)} s");
-        print("--------------------------")
+    playGame(board)
 
 main()
