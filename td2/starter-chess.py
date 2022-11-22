@@ -48,17 +48,10 @@ def dist(pos1,pos2):
     return sqrt ((pow(x1-x2,2))+(pow(y1-y2,2)))
 
 
-def findBlackKingPos(board):
+def findPos(board , piece : str):
     for k,p in board.piece_map().items():
         s = p.symbol()
-        if s == 'k' :
-            return k
-    return -1 
-
-def findWhiteKingPos(board):
-    for k,p in board.piece_map().items():
-        s = p.symbol()
-        if s == 'K' :
+        if s == piece :
             return k
     return -1 
 
@@ -66,9 +59,9 @@ def evalue( board ):
     value = {
         'K':200,
         'Q':9,
-        'R': 5,
-        'B': 3 ,
-        'N':3 ,
+        'R':5,
+        'B':3,
+        'N':3,
         'P':1,
         '.':0
     }
@@ -80,20 +73,19 @@ def evalue( board ):
         # upper AMI ;
         if( l == u ) :
             score += value[l]  
-            score += (pos * posfac)
             if l != 'K' :
-                kingPos = findBlackKingPos(board)
+                score += (pos * posfac)
+                kingPos = findPos(board ,'k')
                 if(kingPos != -1):
                     score -= dist(k,kingPos) * .3
         # lower ENNEMI :
         else : 
             score -= value[u]
-            score += ((1-pos ) * posfac)
             if(l != 'k'):
-                kingPos = findWhiteKingPos(board)
+                score += ((1-pos ) * posfac)
+                kingPos = findPos(board ,'K')
                 if(kingPos != -1):
                     score += dist(k,kingPos) * .3
-
     return score
 
 def minMax(b : chess.Board , depth = 3):
@@ -135,7 +127,6 @@ def amiMove(b : chess.Board , depth = 3):
     meilleur = -inf
     for m in b.generate_legal_moves():
         b.push(m)
-        # minMax
         evl = minMax(b,depth-1)
         b.pop()
         if ( evl > meilleur) or (meilleurMove == None):
@@ -148,7 +139,6 @@ def ennemiMove(b : chess.Board , depth = 3):
     pireval =  inf
     for m in b.generate_legal_moves():
         b.push(m)
-        # maxMin
         evl = maxMin(b,depth-1)
         b.pop()
         if ( evl < pireval) or (pireMove == None):
@@ -163,13 +153,13 @@ def playGame(b : chess.Board):
         b.push(amiMove(b,amiUser))
         print(b)
         if b.is_game_over() : 
-            return b.result() ; 
+            return b.result()
         print("--------------------")
         b.push(ennemiMove(b,ennUser))
         print(b)
         print("--------------------")
         if b.is_game_over() : 
-            return b.result() ;  
+            return b.result()
 
 
 def possibleGamesTest(b):
@@ -184,6 +174,6 @@ def main():
     board = chess.Board()
     # deroulementRandom(board)
     res = playGame(board)
-    print( "*** ", " AMI WIN" if res == "1-0" else "ENNEMI WIN" if res == "0-1" else " EGA " , "***") 
+    print( "*** ", "AMI WIN" if res == "1-0" else "ENNEMI WIN" if res == "0-1" else "EGA" , " ***")
 
 main()
