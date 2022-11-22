@@ -132,10 +132,11 @@ def evalueGameOver(b : chess.Board):
 
 def amiMove(b : chess.Board , depth = 3):
     meilleurMove = None
-    meilleur = 0
+    meilleur = -inf
     for m in b.generate_legal_moves():
         b.push(m)
-        evl = maxMin(b,depth-1)
+        # minMax
+        evl = minMax(b,depth-1)
         b.pop()
         if ( evl > meilleur) or (meilleurMove == None):
             meilleur = evl
@@ -144,10 +145,11 @@ def amiMove(b : chess.Board , depth = 3):
 
 def ennemiMove(b : chess.Board , depth = 3):
     pireMove = None
-    pireval =  math.inf 
+    pireval =  inf
     for m in b.generate_legal_moves():
         b.push(m)
-        evl = minMax(b,depth-1)
+        # maxMin
+        evl = maxMin(b,depth-1)
         b.pop()
         if ( evl < pireval) or (pireMove == None):
             pireval = evl
