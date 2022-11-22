@@ -3,6 +3,8 @@ import math
 import time
 import chess
 from random import randint, choice
+from math import sqrt , inf ,pow
+
 
 def randomMove(b):
     '''Renvoie un mouvement au hasard sur la liste des mouvements possibles. Pour avoir un choix au hasard, il faut
@@ -38,8 +40,29 @@ def possibleGames(b , depth = 3):
     possibleGamesAux(b,depth,game,nodes)
     return len(game),len(nodes)
 
+def dist(pos1,pos2):
+    x1 = pos1%8
+    y1 = pos1//8 
+    x2 = pos2%8
+    y2 = pos2//8
+    return sqrt ((pow(x1-x2,2))+(pow(y1-y2,2)))
 
-def evalue( board , turn = "AMI"):
+
+def findBlackKingPos(board):
+    for k,p in board.piece_map().items():
+        s = p.symbol()
+        if s == 'k' :
+            return k
+    return -1 
+
+def findWhiteKingPos(board):
+    for k,p in board.piece_map().items():
+        s = p.symbol()
+        if s == 'K' :
+            return k
+    return -1 
+
+def evalue( board ):
     value = {
         'K':200,
         'Q':9,
@@ -49,24 +72,36 @@ def evalue( board , turn = "AMI"):
         'P':1,
         '.':0
     }
-    scour , posfac = 0 , .2
+    score , posfac = 0 , .2
     for k,p in board.piece_map().items():
         l = p.symbol()
         u = l.upper()
         pos = k // 8
         # upper AMI ;
-        if(l==u): scour += value[l] + (pos * posfac)
+        if( l == u ) :
+            score += value[l]  
+            score += (pos * posfac)
+            if l != 'K' :
+                kingPos = findBlackKingPos(board)
+                if(kingPos != -1):
+                    score -= dist(k,kingPos) * .3
         # lower ENNEMI :
-        else: scour -= value[u] - ((1-pos ) * posfac)
-    return scour
+        else : 
+            score -= value[u]
+            score += ((1-pos ) * posfac)
+            if(l != 'k'):
+                kingPos = findWhiteKingPos(board)
+                if(kingPos != -1):
+                    score += dist(k,kingPos) * .3
 
-##### ENNEMI :
+    return score
+
 def minMax(b : chess.Board , depth = 3):
     if depth == 0:
      return evalue(b)
     if b.is_game_over():
         return evalueGameOver(b)
-    pire = math.inf
+    pire = inf
     for m in b.generate_legal_moves():
         b.push(m)
         eval = maxMin(b,depth-1)
@@ -79,7 +114,7 @@ def maxMin(b : chess.Board , depth = 3 ):
      return evalue(b)
     if b.is_game_over():
         return evalueGameOver(b)
-    meilleur = - math.inf
+    meilleur = - inf
     for m in b.generate_legal_moves():
         b.push(m)
         eval = minMax(b,depth-1)
@@ -100,44 +135,53 @@ def amiMove(b : chess.Board , depth = 3):
     meilleur = 0
     for m in b.generate_legal_moves():
         b.push(m)
-        evl = maxMin(b,depth)
+        evl = maxMin(b,depth-1)
         b.pop()
         if ( evl > meilleur) or (meilleurMove == None):
             meilleur = evl
             meilleurMove = m
     return meilleurMove
+
 def ennemiMove(b : chess.Board , depth = 3):
     pireMove = None
-    pire = 0
+    pireval =  math.inf 
     for m in b.generate_legal_moves():
         b.push(m)
-        evl = minMax(b,depth)
+        evl = minMax(b,depth-1)
         b.pop()
-        if ( evl < pire) or (pireMove == None):
-            pire = evl
+        if ( evl < pireval) or (pireMove == None):
+            pireval = evl
             pireMove = m
     return pireMove
 
 def playGame(b : chess.Board):
-    while(not b.is_game_over()):
-        b.push(amiMove(b,1))
+    amiUser = int(input("AMI prof : "))
+    ennUser = int(input("ENNEMI prof : "))
+    while(True):
+        b.push(amiMove(b,amiUser))
         print(b)
-        print("------------------------")
-        b.push(ennemiMove(b,3))
+        if b.is_game_over() : 
+            return b.result() ; 
+        print("--------------------")
+        b.push(ennemiMove(b,ennUser))
         print(b)
-        print("------------------------")
+        print("--------------------")
+        if b.is_game_over() : 
+            return b.result() ;  
 
-def possibleGalmesTest(b):
+
+def possibleGamesTest(b):
     for depth in range(1,10):
         start = time.time()
         g,n = possibleGames(b ,depth)
         end = time.time()
         print(f"for depth = {depth} we have {g} games and {n} nodes \ntime of execution {(end -start)} s");
-        print("--------------------------")
+        print("-----------------------")
 
 def main():
     board = chess.Board()
     # deroulementRandom(board)
-    playGame(board)
+    res = playGame(board)
+    print( "*** ", " AMI WIN" if res == "1-0" else "ENNEMI WIN" if res == "0-1" else " EGA " , "***") 
 
 main()
