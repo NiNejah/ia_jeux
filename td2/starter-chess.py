@@ -224,7 +224,7 @@ def maxValue(b: chess.Board, alpha: float, omega: float, depth: int = 3) -> floa
         alpha = max(alpha, minValue(b, alpha, omega, depth - 1))
         b.pop()
         if alpha >= omega:
-            break
+            return omega
     return alpha
 
 
