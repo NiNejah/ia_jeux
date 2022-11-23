@@ -303,6 +303,7 @@ def main():
     # possibleGamesTest(board)
     # EXO 2 test :
     playGameTest(board)
+    board.reset()
     ## EXO 3
     playGameOnAOTest(board)
 
