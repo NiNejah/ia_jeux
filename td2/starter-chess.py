@@ -25,8 +25,18 @@ def deroulementRandom(b):
     deroulementRandom(b)
     b.pop()
 
+##aux function
+def displayTime(start: float, end: float, functionName: str):
+    print(f" {functionName} function ", end=" ")
+    res = end - start
+    t = 'Seconds'
+    if res > 60:
+        res /= 60
+        t = 'Minutes'
+    print(f"take {res} {t} as a run time")
+'''************************************* EXO1 *************************************'''
 
-# EXO1 :
+
 def possibleGamesAux(b: chess.Board, depth: int, games: list, nodes: list):
     if b.is_game_over() or depth == 0:
         # eval(b)
@@ -55,7 +65,11 @@ def possibleGamesTest(b: chess.Board):
         print("-----------------------")
 
 
-# fin EXO1
+'''********************************************************************************'''
+
+'''************************************* EXO2 *************************************'''
+
+
 def dist(pos1: int, pos2: int):
     x1 = pos1 % 8
     y1 = pos1 // 8
@@ -72,7 +86,7 @@ def findPos(b: chess.Board, piece: str):
     return -1
 
 
-def evalue(b: chess.Board):
+def evaluation(b: chess.Board) -> float:
     value = {
         'K': 200,
         'Q': 9,
@@ -88,53 +102,53 @@ def evalue(b: chess.Board):
         u = l.upper()
         pos = k // 8
         # upper AMI ;
-        if (l == u):
+        if l == u:
             score += value[l]
             if l != 'K':
                 score += (pos * posfac)
                 kingPos = findPos(b, 'k')
-                if (kingPos != -1):
+                if kingPos != -1:
                     score -= dist(k, kingPos) * .3
         # lower ENNEMI :
         else:
             score -= value[u]
-            if (l != 'k'):
+            if l != 'k':
                 score += ((1 - pos) * posfac)
                 kingPos = findPos(b, 'K')
-                if (kingPos != -1):
+                if kingPos != -1:
                     score += dist(k, kingPos) * .3
     return score
 
 
-def minMax(b: chess.Board, depth: int = 3) -> int:
+def minMax(b: chess.Board, depth: int = 3) -> float:
     if depth == 0:
-        return evalue(b)
+        return evaluation(b)
     if b.is_game_over():
-        return evalueGameOver(b)
-    pire = inf
+        return evaluationGameOver(b)
+    worstScore = inf
     for m in b.generate_legal_moves():
         b.push(m)
         eval = maxMin(b, depth - 1)
         b.pop()
-        pire = min(eval, pire)
-    return pire
+        worstScore = min(eval, worstScore)
+    return worstScore
 
 
-def maxMin(b: chess.Board, depth: int = 3) -> int:
+def maxMin(b: chess.Board, depth: int = 3) -> float:
     if depth == 0:
-        return evalue(b)
+        return evaluation(b)
     if b.is_game_over():
-        return evalueGameOver(b)
-    meilleur = - inf
+        return evaluationGameOver(b)
+    bestScore = - inf
     for m in b.generate_legal_moves():
         b.push(m)
         eval = minMax(b, depth - 1)
         b.pop()
-        meilleur = max(meilleur, eval)
-    return meilleur
+        bestScore = max(bestScore, eval)
+    return bestScore
 
 
-def evalueGameOver(b: chess.Board)-> int:
+def evaluationGameOver(b: chess.Board) -> int:
     if b.result() == "1-0":
         return 500
     elif b.result() == "0-1":
@@ -143,53 +157,157 @@ def evalueGameOver(b: chess.Board)-> int:
         return 0
 
 
-def amiMove(b: chess.Board, depth: int = 3) -> chess.Move:
-    meilleurMove = None
-    meilleur = -inf
+def maxMovement(b: chess.Board, depth: int = 3) -> chess.Move:
+    bestScoreMove = None
+    bestScore = -inf
     for m in b.generate_legal_moves():
         b.push(m)
         evl = minMax(b, depth - 1)
         b.pop()
-        if (evl > meilleur) or (meilleurMove is None):
-            meilleur = evl
-            meilleurMove = m
-    return meilleurMove
+        if (evl > bestScore) or (bestScoreMove is None):
+            bestScore = evl
+            bestScoreMove = m
+    return bestScoreMove
 
 
-def ennemiMove(b: chess.Board, depth: int = 3) -> chess.Move:
-    pireMove = None
-    pireval = inf
+def minMovement(b: chess.Board, depth: int = 3) -> chess.Move:
+    worstScoreMove = None
+    worstScoreVal = inf
     for m in b.generate_legal_moves():
         b.push(m)
         evl = maxMin(b, depth - 1)
         b.pop()
-        if (evl < pireval) or (pireMove is None):
-            pireval = evl
-            pireMove = m
-    return pireMove
+        if (evl < worstScoreVal) or (worstScoreMove is None):
+            worstScoreVal = evl
+            worstScoreMove = m
+    return worstScoreMove
 
 
 def playGame(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str:
-    while (True):
-        b.push(amiMove(b, depthAmi))
+    while True:
+        b.push(maxMovement(b, depthAmi))
         print(b)
         if b.is_game_over():
             return b.result()
         print("--------------------")
-        b.push(ennemiMove(b, depthEnnemi))
+        b.push(minMovement(b, depthEnnemi))
         print(b)
         print("--------------------")
         if b.is_game_over():
             return b.result()
+
+
+def playGameTest(b: chess.Board):
+    amiUserDepth = int(input("AMI depth : "))
+    ennUserDepth = int(input("ENNEMI depth : "))
+    s = time.time()
+    res = playGame(b, amiUserDepth, ennUserDepth)
+    e = time.time()
+    print(f"* AMI depth = {amiUserDepth}, ENNUMI depth = {ennUserDepth}")
+    displayTime(s, e, "Max - Min")
+    print("*** ", "AMI WIN" if res == "1-0" else "ENNEMI WIN" if res == "0-1" else "EGA", " ***")
+
+
+'''********************************************************************************'''
+
+'''************************** L’alpha et l’oméga de α − β *************************'''
+
+
+# alpha = -inf
+def maxValue(b: chess.Board, alpha: float, omega: float, depth: int = 3) -> float:
+    if depth == 0:
+        return evaluation(b)
+    if b.is_game_over():
+        return evaluationGameOver(b)
+    for m in b.generate_legal_moves():
+        b.push(m)
+        alpha = max(alpha, minValue(b, alpha, omega, depth - 1))
+        b.pop()
+        if alpha >= omega:
+            break
+    return alpha
+
+
+def minValue(b: chess.Board, alpha: float, omega: float, depth: int = 3) -> float:
+    if depth == 0:
+        return evaluation(b)
+    if b.is_game_over():
+        return evaluationGameOver(b)
+    for m in b.generate_legal_moves():
+        b.push(m)
+        omega = min(omega, maxValue(b, alpha, omega, depth - 1))
+        b.pop()
+        if alpha >= omega:
+            return alpha
+    return omega
+
+
+def maxAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
+    bestScoreMove = None
+    bestScore = -inf
+    for m in b.generate_legal_moves():
+        b.push(m)
+        evl = minValue(b, -inf, inf, depth - 1)
+        b.pop()
+        if (evl > bestScore) or (bestScoreMove is None):
+            bestScoreMove = m
+            bestScore = evl
+    return bestScoreMove
+
+
+def minAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
+    worstScoreMove = None
+    worstScoreVal = inf
+    for m in b.generate_legal_moves():
+        b.push(m)
+        evl = maxValue(b, -inf, inf, depth - 1)
+        b.pop()
+        if (evl < worstScoreVal) or (worstScoreMove is None):
+            worstScoreVal = evl
+            worstScoreMove = m
+    return worstScoreMove
+
+
+def playGameOnAO(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str:
+    while True:
+        b.push(maxAOMovement(b, depthAmi))
+        print(b)
+        if b.is_game_over():
+            return b.result()
+        print("--------------------")
+        b.push(minAOMovement(b, depthEnnemi))
+        print(b)
+        print("--------------------")
+        if b.is_game_over():
+            return b.result()
+
+
+def playGameOnAOTest(b: chess.Board):
+    amiUserDepth = int(input("AMI depth : "))
+    ennUserDepth = int(input("ENNEMI depth : "))
+    s = time.time()
+    res = playGameOnAO(b, amiUserDepth, ennUserDepth)
+    e = time.time()
+    print(f"* AMI depth = {amiUserDepth}, ENNUMI depth = {ennUserDepth}")
+    displayTime(s, e, "Alfa - Omega")
+    print("*** ", "AMI WIN" if res == "1-0" else "ENNEMI WIN" if res == "0-1" else "EGA", " ***")
+
+
+'''********************************************************************************'''
 
 
 def main():
     board = chess.Board()
     # deroulementRandom(board)
-    amiUser = int(input("AMI depth : "))
-    ennUser = int(input("ENNEMI depth : "))
-    res = playGame(board, amiUser, ennUser)
-    print("*** ", "AMI WIN" if res == "1-0" else "ENNEMI WIN" if res == "0-1" else "EGA", " ***")
+    ## EXO 1 test:
+    # possibleGamesTest(board)
+    # EXO 2 test :
+    playGameTest(board)
+    ## EXO 3
+    playGameOnAOTest(board)
 
 
 main()
+
+
+
