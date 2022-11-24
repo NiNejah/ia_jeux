@@ -186,13 +186,13 @@ def minMovement(b: chess.Board, depth: int = 3) -> chess.Move:
 def playGame(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str:
     while True:
         b.push(maxMovement(b, depthAmi))
-        print(b)
+        # print(b)
         if b.is_game_over():
             return b.result()
-        print("--------------------")
+        # print("--------------------")
         b.push(minMovement(b, depthEnnemi))
-        print(b)
-        print("--------------------")
+        # print(b)
+        # print("--------------------")
         if b.is_game_over():
             return b.result()
 
@@ -271,13 +271,13 @@ def minAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
 def playGameOnAO(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str:
     while True:
         b.push(maxAOMovement(b, depthAmi))
-        print(b)
+        # print(b)
         if b.is_game_over():
             return b.result()
-        print("--------------------")
+        # print("--------------------")
         b.push(minAOMovement(b, depthEnnemi))
-        print(b)
-        print("--------------------")
+        # print(b)
+        # print("--------------------")
         if b.is_game_over():
             return b.result()
 
