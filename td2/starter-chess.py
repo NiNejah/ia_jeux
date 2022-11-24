@@ -25,15 +25,18 @@ def deroulementRandom(b):
     deroulementRandom(b)
     b.pop()
 
+
 ##aux function
 def displayTime(start: float, end: float, functionName: str):
     print(f" {functionName} function ", end=" ")
-    res = end - start
-    t = 'Seconds'
-    if res > 60:
-        res /= 60
-        t = 'Minutes'
-    print(f"take {res} {t} as a run time")
+    m = 0
+    s = end - start
+    if s > 60:
+        m = s / 60
+        s %= 60
+    print("take {} Minutes {:.2} Seconds as a run time".format(m, s))
+
+
 '''************************************* EXO1 *************************************'''
 
 
@@ -78,10 +81,9 @@ def dist(pos1: int, pos2: int):
     return sqrt((pow(x1 - x2, 2)) + (pow(y1 - y2, 2)))
 
 
-def findPos(b: chess.Board, piece: str):
+def findPos(b: chess.Board, piece: str) -> int:
     for k, p in b.piece_map().items():
-        s = p.symbol()
-        if s == piece:
+        if p.symbol() == piece:
             return k
     return -1
 
@@ -144,7 +146,7 @@ def maxMin(b: chess.Board, depth: int = 3) -> float:
         b.push(m)
         eval = minMax(b, depth - 1)
         b.pop()
-        bestScore = max(bestScore, eval)
+        bestScore = max(eval, bestScore)
     return bestScore
 
 
@@ -309,6 +311,3 @@ def main():
 
 
 main()
-
-
-
