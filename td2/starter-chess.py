@@ -35,7 +35,8 @@ def displayTime(start: float, end: float, functionName: str):
         t = 'Minutes'
     print(f"take {res} {t} as a run time")
 '''************************************* EXO1 *************************************'''
-
+#global variable to count the number of node in minmax
+nb_nodes = 0
 
 def possibleGamesAux(b: chess.Board, depth: int, games: list, nodes: list):
     if b.is_game_over() or depth == 0:
@@ -121,6 +122,8 @@ def evaluation(b: chess.Board) -> float:
 
 
 def minMax(b: chess.Board, depth: int = 3) -> float:
+    global nb_nodes
+    nb_nodes += 1
     if depth == 0:
         return evaluation(b)
     if b.is_game_over():
@@ -135,6 +138,8 @@ def minMax(b: chess.Board, depth: int = 3) -> float:
 
 
 def maxMin(b: chess.Board, depth: int = 3) -> float:
+    global nb_nodes
+    nb_nodes += 1
     if depth == 0:
         return evaluation(b)
     if b.is_game_over():
@@ -158,6 +163,8 @@ def evaluationGameOver(b: chess.Board) -> int:
 
 
 def maxMovement(b: chess.Board, depth: int = 3) -> chess.Move:
+    global nb_nodes
+    nb_nodes += 1
     bestScoreMove = None
     bestScore = -inf
     for m in b.generate_legal_moves():
@@ -171,6 +178,8 @@ def maxMovement(b: chess.Board, depth: int = 3) -> chess.Move:
 
 
 def minMovement(b: chess.Board, depth: int = 3) -> chess.Move:
+    global nb_nodes
+    nb_nodes += 1
     worstScoreMove = None
     worstScoreVal = inf
     for m in b.generate_legal_moves():
@@ -203,7 +212,7 @@ def playGameTest(b: chess.Board):
     s = time.time()
     res = playGame(b, amiUserDepth, ennUserDepth)
     e = time.time()
-    print(f"* AMI depth = {amiUserDepth}, ENNUMI depth = {ennUserDepth}")
+    print(f"* AMI depth = {amiUserDepth}, ENNEMI depth = {ennUserDepth}")
     displayTime(s, e, "Max - Min")
     print("*** ", "AMI WIN" if res == "1-0" else "ENNEMI WIN" if res == "0-1" else "EGA", " ***")
 
@@ -211,10 +220,13 @@ def playGameTest(b: chess.Board):
 '''********************************************************************************'''
 
 '''************************** L’alpha et l’oméga de α − β *************************'''
-
+#global variable used to count the number
+nb_nodes_AO = 0
 
 # alpha = -inf
 def maxValue(b: chess.Board, alpha: float, omega: float, depth: int = 3) -> float:
+    global nb_nodes_AO
+    nb_nodes_AO += 1
     if depth == 0:
         return evaluation(b)
     if b.is_game_over():
@@ -229,6 +241,8 @@ def maxValue(b: chess.Board, alpha: float, omega: float, depth: int = 3) -> floa
 
 
 def minValue(b: chess.Board, alpha: float, omega: float, depth: int = 3) -> float:
+    global nb_nodes_AO
+    nb_nodes_AO += 1
     if depth == 0:
         return evaluation(b)
     if b.is_game_over():
@@ -243,6 +257,8 @@ def minValue(b: chess.Board, alpha: float, omega: float, depth: int = 3) -> floa
 
 
 def maxAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
+    global nb_nodes_AO
+    nb_nodes_AO += 1
     bestScoreMove = None
     bestScore = -inf
     for m in b.generate_legal_moves():
@@ -256,6 +272,8 @@ def maxAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
 
 
 def minAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
+    global nb_nodes_AO
+    nb_nodes_AO += 1
     worstScoreMove = None
     worstScoreVal = inf
     for m in b.generate_legal_moves():
@@ -288,27 +306,27 @@ def playGameOnAOTest(b: chess.Board):
     s = time.time()
     res = playGameOnAO(b, amiUserDepth, ennUserDepth)
     e = time.time()
-    print(f"* AMI depth = {amiUserDepth}, ENNUMI depth = {ennUserDepth}")
+    print(f"* AMI depth = {amiUserDepth}, ENNEMI depth = {ennUserDepth}")
     displayTime(s, e, "Alfa - Omega")
     print("*** ", "AMI WIN" if res == "1-0" else "ENNEMI WIN" if res == "0-1" else "EGA", " ***")
 
 
 '''********************************************************************************'''
+# for a search in depth 1 and 2 minmax and AO browse thr
 
 
-def main():
+
+if __name__=='__main__':
     board = chess.Board()
     # deroulementRandom(board)
     ## EXO 1 test:
     # possibleGamesTest(board)
     # EXO 2 test :
     playGameTest(board)
+    print("nb_nodes =", nb_nodes)
     board.reset()
     ## EXO 3
     playGameOnAOTest(board)
-
-
-main()
-
+    print("nb_nodesAO =", nb_nodes_AO)
 
 
