@@ -25,15 +25,18 @@ def deroulementRandom(b):
     deroulementRandom(b)
     b.pop()
 
+
 ##aux function
 def displayTime(start: float, end: float, functionName: str):
     print(f" {functionName} function ", end=" ")
-    res = end - start
-    t = 'Seconds'
-    if res > 60:
-        res /= 60
-        t = 'Minutes'
-    print(f"take {res} {t} as a run time")
+    m = 0
+    s = end - start
+    if s > 60:
+        m = s / 60
+        s %= 60
+    print("take {} Minutes {:.2} Seconds as a run time".format(m, s))
+
+
 '''************************************* EXO1 *************************************'''
 #global variable to count the number of node in minmax
 nb_nodes = 0
@@ -79,10 +82,9 @@ def dist(pos1: int, pos2: int):
     return sqrt((pow(x1 - x2, 2)) + (pow(y1 - y2, 2)))
 
 
-def findPos(b: chess.Board, piece: str):
+def findPos(b: chess.Board, piece: str) -> int:
     for k, p in b.piece_map().items():
-        s = p.symbol()
-        if s == piece:
+        if p.symbol() == piece:
             return k
     return -1
 
@@ -149,7 +151,7 @@ def maxMin(b: chess.Board, depth: int = 3) -> float:
         b.push(m)
         eval = minMax(b, depth - 1)
         b.pop()
-        bestScore = max(bestScore, eval)
+        bestScore = max(eval, bestScore)
     return bestScore
 
 
@@ -195,13 +197,13 @@ def minMovement(b: chess.Board, depth: int = 3) -> chess.Move:
 def playGame(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str:
     while True:
         b.push(maxMovement(b, depthAmi))
-        print(b)
+        # print(b)
         if b.is_game_over():
             return b.result()
-        print("--------------------")
+        # print("--------------------")
         b.push(minMovement(b, depthEnnemi))
-        print(b)
-        print("--------------------")
+        # print(b)
+        # print("--------------------")
         if b.is_game_over():
             return b.result()
 
@@ -264,7 +266,7 @@ def maxAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
     for m in b.generate_legal_moves():
         b.push(m)
         evl = minValue(b, -inf, inf, depth - 1)
-        b.pop()
+        b.pop()=======
         if (evl > bestScore) or (bestScoreMove is None):
             bestScoreMove = m
             bestScore = evl
@@ -289,13 +291,13 @@ def minAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
 def playGameOnAO(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str:
     while True:
         b.push(maxAOMovement(b, depthAmi))
-        print(b)
+        # print(b)
         if b.is_game_over():
             return b.result()
-        print("--------------------")
+        # print("--------------------")
         b.push(minAOMovement(b, depthEnnemi))
-        print(b)
-        print("--------------------")
+        # print(b)
+        # print("--------------------")
         if b.is_game_over():
             return b.result()
 
@@ -328,5 +330,3 @@ if __name__=='__main__':
     ## EXO 3
     playGameOnAOTest(board)
     print("nb_nodesAO =", nb_nodes_AO)
-
-
