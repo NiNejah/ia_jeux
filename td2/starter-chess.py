@@ -266,7 +266,7 @@ def maxAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
     for m in b.generate_legal_moves():
         b.push(m)
         evl = minValue(b, -inf, inf, depth - 1)
-        b.pop()=======
+        b.pop()
         if (evl > bestScore) or (bestScoreMove is None):
             bestScoreMove = m
             bestScore = evl
@@ -309,12 +309,18 @@ def playGameOnAOTest(b: chess.Board):
     res = playGameOnAO(b, amiUserDepth, ennUserDepth)
     e = time.time()
     print(f"* AMI depth = {amiUserDepth}, ENNEMI depth = {ennUserDepth}")
-    displayTime(s, e, "Alfa - Omega")
+    displayTime(s, e, "Alpha - Omega")
     print("*** ", "AMI WIN" if res == "1-0" else "ENNEMI WIN" if res == "0-1" else "EGA", " ***")
 
 
 '''********************************************************************************'''
-# for a search in depth 1 and 2 minmax and AO browse thr
+def MainMenu():
+    print(" 1 - Using MinMax algo.")
+    print(" 2 - Using Alpha Omega algo.")
+    print(" 3 - Comparing the two algo.")
+    
+
+def ascUser():
 
 
 
