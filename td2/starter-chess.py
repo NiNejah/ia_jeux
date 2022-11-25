@@ -37,18 +37,18 @@ def displayTime(start: float, end: float, functionName: str):
     print("take {} Minutes {:.2} Seconds as a run time".format(m, s))
 
 
-'''************************************* EXO1 *************************************'''
-#global variable to count the number of node in minmax
+'''************************************* EXO2.1 *************************************'''
+# global variable to count the number of node in minmax
 nb_nodes = 0
 
+
 def possibleGamesAux(b: chess.Board, depth: int, games: list, nodes: list):
+    nodes.append(1)
     if b.is_game_over() or depth == 0:
-        # eval(b)
         games.append(1)
     else:
         for m in b.generate_legal_moves():
             b.push(m)
-            nodes.append(1)
             possibleGamesAux(b, depth - 1, games, nodes)
             b.pop()
 
@@ -61,7 +61,7 @@ def possibleGames(b: chess.Board, depth: int = 3):
 
 
 def possibleGamesTest(b: chess.Board):
-    for depth in range(1, 10):
+    for depth in range(1, 5):
         start = time.time()
         g, n = possibleGames(b, depth)
         end = time.time()
@@ -71,7 +71,7 @@ def possibleGamesTest(b: chess.Board):
 
 '''********************************************************************************'''
 
-'''************************************* EXO2 *************************************'''
+'''************************************* EXO2 (1-2-3) *************************************'''
 
 
 def dist(pos1: int, pos2: int):
@@ -221,9 +221,10 @@ def playGameTest(b: chess.Board):
 
 '''********************************************************************************'''
 
-'''************************** L’alpha et l’oméga de α − β *************************'''
-#global variable used to count the number
+'''************************** EXO3 : L’alpha et l’oméga de α − β *************************'''
+# global variable used to count the number
 nb_nodes_AO = 0
+
 
 # alpha = -inf
 def maxValue(b: chess.Board, alpha: float, omega: float, depth: int = 3) -> float:
@@ -314,17 +315,23 @@ def playGameOnAOTest(b: chess.Board):
 
 
 '''********************************************************************************'''
-def MainMenu():
+
+
+def mainMenu():
     print(" 1 - Using MinMax algo.")
     print(" 2 - Using Alpha Omega algo.")
     print(" 3 - Comparing the two algo.")
-    
-
-def ascUser():
 
 
+def askUser():
+    mainMenu()
+    while True:
+        pass
 
-if __name__=='__main__':
+
+
+
+if __name__ == '__main__':
     board = chess.Board()
     # deroulementRandom(board)
     ## EXO 1 test:
