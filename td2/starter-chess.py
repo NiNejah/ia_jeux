@@ -222,12 +222,16 @@ def playGameTest(b: chess.Board):
 '''********************************************************************************'''
 
 '''************************** EXO3 : L’alpha et l’oméga de α − β *************************'''
-# global variable used to count the number
+# globals variables used to count the number
 nb_nodes_AO = 0
+bestScoreMove = None
+worstScoreMove = None
+currentDepth = 0
 
 
 # alpha = -inf
 def maxValue(b: chess.Board, alpha: float, omega: float, depth: int = 3) -> float:
+    global bestScoreMove
     global nb_nodes_AO
     nb_nodes_AO += 1
     if depth == 0:
@@ -236,14 +240,18 @@ def maxValue(b: chess.Board, alpha: float, omega: float, depth: int = 3) -> floa
         return evaluationGameOver(b)
     for m in b.generate_legal_moves():
         b.push(m)
-        alpha = max(alpha, minValue(b, alpha, omega, depth - 1))
+        eval = minValue(b, alpha, omega, depth - 1)
         b.pop()
+        if eval > alpha or bestScoreMove is None:
+            alpha = eval
+            bestScoreMove = m
         if alpha >= omega:
             return omega
     return alpha
 
 
 def minValue(b: chess.Board, alpha: float, omega: float, depth: int = 3) -> float:
+    global worstScoreMove
     global nb_nodes_AO
     nb_nodes_AO += 1
     if depth == 0:
@@ -252,40 +260,25 @@ def minValue(b: chess.Board, alpha: float, omega: float, depth: int = 3) -> floa
         return evaluationGameOver(b)
     for m in b.generate_legal_moves():
         b.push(m)
-        omega = min(omega, maxValue(b, alpha, omega, depth - 1))
+        eval = maxValue(b, alpha, omega, depth - 1)
         b.pop()
+        if eval < omega or worstScoreMove is None:
+            omega = eval
+            worstScoreMove = m
         if alpha >= omega:
             return alpha
     return omega
 
 
 def maxAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
-    global nb_nodes_AO
-    nb_nodes_AO += 1
-    bestScoreMove = None
-    bestScore = -inf
-    for m in b.generate_legal_moves():
-        b.push(m)
-        evl = minValue(b, -inf, inf, depth - 1)
-        b.pop()
-        if (evl > bestScore) or (bestScoreMove is None):
-            bestScoreMove = m
-            bestScore = evl
+    global bestScoreMove
+    maxValue(b, -inf, inf, depth)
     return bestScoreMove
 
 
 def minAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
-    global nb_nodes_AO
-    nb_nodes_AO += 1
-    worstScoreMove = None
-    worstScoreVal = inf
-    for m in b.generate_legal_moves():
-        b.push(m)
-        evl = maxValue(b, -inf, inf, depth - 1)
-        b.pop()
-        if (evl < worstScoreVal) or (worstScoreMove is None):
-            worstScoreVal = evl
-            worstScoreMove = m
+    global worstScoreMove
+    minValue(b, -inf, inf, depth )
     return worstScoreMove
 
 
@@ -329,17 +322,15 @@ def askUser():
         pass
 
 
-
-
 if __name__ == '__main__':
     board = chess.Board()
     # deroulementRandom(board)
     ## EXO 1 test:
     # possibleGamesTest(board)
     # EXO 2 test :
-    playGameTest(board)
-    print("nb_nodes =", nb_nodes)
-    board.reset()
+    # playGameTest(board)
+    # print("nb_nodes =", nb_nodes)
+    # board.reset()
     ## EXO 3
     playGameOnAOTest(board)
     print("nb_nodesAO =", nb_nodes_AO)
