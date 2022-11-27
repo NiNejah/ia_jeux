@@ -34,7 +34,7 @@ def displayTime(start: float, end: float, functionName: str):
     if s > 60:
         m = s // 60
         s %= 60
-    print("take {} Minutes {:.2} Seconds as a run time".format(m, s))
+    print("take {} Minutes {:.2} Seconds as a run time".format(int(m), s))
 
 '''************************************* EXO 1.1 *************************************'''
 '''Le facteur de branchement de cet arbre est 3.
@@ -243,70 +243,68 @@ def playGameTest(b: chess.Board, amiUserDepth : int, ennUserDepth : int):
 '''Profondeur (2,2) : 62370 noeuds parcourus en 0.77 secondes'''
 '''Profondeur (3,3) : 713023 noeuds parcourus en 0.77 secondes'''
 
-# global variable used to count the number
+# globals variables used to count the number
 nb_nodes_AO = 0
+bestScoreMove = None
+worstScoreMove = None
+# Iterative Deepening
+timeAlphaOmegaStart = None
 
 
 # alpha = -inf
-def maxValue(b: chess.Board, alpha: float, omega: float, depth: int = 3) -> float:
+def maxMinAlphaOmega(b: chess.Board, alpha: float, omega: float, depth: int = 3, originalDepth: int = 3,
+                     maximizer: bool = True) -> float:
+    global bestScoreMove
+    global worstScoreMove
     global nb_nodes_AO
     nb_nodes_AO += 1
     if depth == 0:
         return evaluation(b)
     if b.is_game_over():
         return evaluationGameOver(b)
-    for m in b.generate_legal_moves():
-        b.push(m)
-        alpha = max(alpha, minValue(b, alpha, omega, depth - 1))
-        b.pop()
-        if alpha >= omega:
-            return omega
-    return alpha
-
-
-def minValue(b: chess.Board, alpha: float, omega: float, depth: int = 3) -> float:
-    global nb_nodes_AO
-    nb_nodes_AO += 1
-    if depth == 0:
-        return evaluation(b)
-    if b.is_game_over():
-        return evaluationGameOver(b)
-    for m in b.generate_legal_moves():
-        b.push(m)
-        omega = min(omega, maxValue(b, alpha, omega, depth - 1))
-        b.pop()
-        if alpha >= omega:
-            return alpha
-    return omega
+    if maximizer:
+        # bestScore = -inf
+        for m in b.generate_legal_moves():
+            b.push(m)
+            eval = maxMinAlphaOmega(b, alpha, omega, depth - 1, originalDepth, False)
+            b.pop()
+            # bestScore = min(eval, bestScore)
+            if bestScoreMove is None:
+                bestScoreMove = m
+            if eval > alpha:
+                alpha = eval
+                if depth == originalDepth:
+                    bestScoreMove = m
+            if alpha >= omega:
+                return omega
+        return alpha
+    else:
+        # worstScore = inf
+        for m in b.generate_legal_moves():
+            b.push(m)
+            eval = maxMinAlphaOmega(b, alpha, omega, depth - 1, originalDepth, True)
+            b.pop()
+            # worstScore = min(eval, worstScore)
+            if worstScoreMove is None:
+                worstScoreMove = m
+            if eval < omega:
+                omega = eval
+                if depth == originalDepth:
+                    worstScoreMove = m
+            if alpha >= omega:
+                alpha
+        return omega
 
 
 def maxAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
-    global nb_nodes_AO
-    nb_nodes_AO += 1
-    bestScoreMove = None
-    bestScore = -inf
-    for m in b.generate_legal_moves():
-        b.push(m)
-        evl = minValue(b, -inf, inf, depth - 1)
-        b.pop()
-        if (evl > bestScore) or (bestScoreMove is None):
-            bestScoreMove = m
-            bestScore = evl
+    global bestScoreMove
+    maxMinAlphaOmega(b, -inf, inf, depth, depth, True)
     return bestScoreMove
 
 
 def minAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
-    global nb_nodes_AO
-    nb_nodes_AO += 1
-    worstScoreMove = None
-    worstScoreVal = inf
-    for m in b.generate_legal_moves():
-        b.push(m)
-        evl = maxValue(b, -inf, inf, depth - 1)
-        b.pop()
-        if (evl < worstScoreVal) or (worstScoreMove is None):
-            worstScoreVal = evl
-            worstScoreMove = m
+    global worstScoreMove
+    maxMinAlphaOmega(b, -inf, inf, depth, depth, False)
     return worstScoreMove
 
 
@@ -400,8 +398,6 @@ def askUser(b: chess.Board):
         else :
             numberError()
         pass
-
-
 
 
 if __name__ == '__main__':
