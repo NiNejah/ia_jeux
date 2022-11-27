@@ -36,6 +36,7 @@ def displayTime(start: float, end: float, functionName: str):
         s %= 60
     print("take {} Minutes {:.2} Seconds as a run time".format(int(m), s))
 
+
 '''************************************* EXO 1.1 *************************************'''
 '''Le facteur de branchement de cet arbre est 3.
 Il n'est pas nécessaire que toutes les branches de l'arbre soit de même hauteur car toutes les parties n'ont pas la même durée'''
@@ -218,7 +219,7 @@ def playGame(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str:
             return b.result()
 
 
-def playGameTest(b: chess.Board, amiUserDepth : int, ennUserDepth : int):
+def playGameTest(b: chess.Board, amiUserDepth: int, ennUserDepth: int):
     s = time.time()
     res = playGame(b, amiUserDepth, ennUserDepth)
     e = time.time()
@@ -307,11 +308,23 @@ def maxMinAlphaOmega(b: chess.Board, alpha: float, omega: float, depth: int = 3,
                 if depth == originalDepth:
                     worstScoreMove = m
             if alpha >= omega:
-                alpha
+                return alpha
         return omega
 
 
 def maxAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
+    global bestScoreMove
+    maxMinAlphaOmega(b, -inf, inf, depth, depth, True)
+    return bestScoreMove
+
+
+def minAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
+    global worstScoreMove
+    maxMinAlphaOmega(b, -inf, inf, depth, depth, False)
+    return worstScoreMove
+
+
+def maxAOMovementIterativeDeepening(b: chess.Board, depth: int = 3) -> chess.Move:
     global bestScoreMove
     global timeout
     global timeAlphaOmegaStart
@@ -322,17 +335,17 @@ def maxAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
     while True:
         if d > 0:
             saveBestMove = bestScoreMove
-            print(" I change the move ment to", saveBestMove.from_square, "->", saveBestMove.to_square, ":in depth = ",
-                  depth + d - 1)
+            # print(" I change the move ment to", saveBestMove.from_square, "->", saveBestMove.to_square, ":in depth = ",
+            #       depth + d - 1)
             # print("start at", timeAlphaOmegaStart, "/ now it is = ", time.time(), "the diferant is ",
             #       time.time() - timeAlphaOmegaStart)
         maxMinAlphaOmega(b, -inf, inf, depth + d, depth + d, True)
         d += 1
         if timeout:
-            return saveBestMove
+            return saveBestMove if saveBestMove is not None else bestScoreMove
 
 
-def minAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
+def minAOMovementIterativeDeepening(b: chess.Board, depth: int = 3) -> chess.Move:
     global worstScoreMove
     global timeout
     global timeAlphaOmegaStart
@@ -340,23 +353,27 @@ def minAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
     timeout = False
     timeAlphaOmegaStart = time.time()
     d = 0
+    # depth = 1 -> 2 -> 3 -> 4
     while True:
         if d > 0:
             saveWorstMove = worstScoreMove
-        maxMinAlphaOmega(b, -inf, inf, depth, depth, False)
+            # on fait pas ça : depth += d
+        maxMinAlphaOmega(b, -inf, inf, depth + d, depth + d, False)
         d += 1
         if timeout:
-            return saveWorstMove
+            # print("change the move ment to", saveWorstMove.from_square, "->", saveWorstMove.to_square, ":in depth = ",
+            #       depth + d - 1)
+            return saveWorstMove if saveWorstMove is not None else worstScoreMove
 
 
 def playGameOnAO(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str:
     while True:
-        b.push(maxAOMovement(b, depthAmi))
+        b.push(maxAOMovementIterativeDeepening(b, depthAmi))
         # print(b)
         if b.is_game_over():
             return b.result()
         # print("--------------------")
-        b.push(minAOMovement(b, depthEnnemi))
+        b.push(minAOMovementIterativeDeepening(b, depthEnnemi))
         # print(b)
         # print("--------------------")
         if b.is_game_over():
@@ -373,13 +390,17 @@ def playGameOnAOTest(b: chess.Board, amiUserDepth: int, ennUserDepth: int):
 
 
 '''********************************************************************************'''
+
+
 def numberError():
     print("That's not a valid number")
+
 
 def mainMenu():
     print(" 1 - Using MinMax algo.")
     print(" 2 - Using Alpha Omega algo.")
     print(" 3 - Comparing the two algo.")
+
 
 def depthMenu():
     print(" 1 - Depth (AMI = 1, ENNEMI = 1)")
@@ -388,42 +409,46 @@ def depthMenu():
     print(" 4 - Depth (AMI = 3, ENNEMI = 1)")
     print(" 5 - Depth (AMI = 1, ENNEMI = 3)")
 
+
 def compareMenu(b: chess.Board):
     print(" 1 - MinMax (AMI = 1, ENNEMI = 1) VS Alpha-Oméga (AMI = 1, ENNEMI = 1)")
     print(" 2 - MinMax (AMI = 2, ENNEMI = 2) VS Alpha-Oméga (AMI = 2, ENNEMI = 2)")
     print(" 3 - MinMax (AMI = 3, ENNEMI = 3) VS Alpha-Oméga (AMI = 3, ENNEMI = 3)")
 
-def minMaxChoiceMenu(b: chess.Board) :
+
+def minMaxChoiceMenu(b: chess.Board):
     depthMenu()
     chosenNumber = int(input("Enter the number corresponding to your choice : "))
-    if (chosenNumber == 1) :
-        playGameTest(b,1,1)
-    elif (chosenNumber == 2) :
-        playGameTest(b,2,2)
-    elif (chosenNumber == 3) :
-        playGameTest(b,3,3)
-    elif (chosenNumber == 4) :
-        playGameTest(b,3,1)
-    elif (chosenNumber == 5) :
-        playGameTest(b,1,3)
-    else :
+    if (chosenNumber == 1):
+        playGameTest(b, 1, 1)
+    elif (chosenNumber == 2):
+        playGameTest(b, 2, 2)
+    elif (chosenNumber == 3):
+        playGameTest(b, 3, 3)
+    elif (chosenNumber == 4):
+        playGameTest(b, 3, 1)
+    elif (chosenNumber == 5):
+        playGameTest(b, 1, 3)
+    else:
         numberError()
 
-def aoChoiceMenu(b: chess.Board) :
+
+def aoChoiceMenu(b: chess.Board):
     depthMenu()
     chosenNumber = int(input("Enter the number corresponding to your choice : "))
-    if (chosenNumber == 1) :
-        playGameOnAOTest(b,1,1)
-    elif (chosenNumber == 2) :
-        playGameOnAOTest(b,2,2)
-    elif (chosenNumber == 3) :
-        playGameOnAOTest(b,3,3)
-    elif (chosenNumber == 4) :
-        playGameOnAOTest(b,3,1)
-    elif (chosenNumber == 5) :
-        playGameOnAOTest(b,1,3)
-    else :
+    if (chosenNumber == 1):
+        playGameOnAOTest(b, 1, 1)
+    elif (chosenNumber == 2):
+        playGameOnAOTest(b, 2, 2)
+    elif (chosenNumber == 3):
+        playGameOnAOTest(b, 3, 3)
+    elif (chosenNumber == 4):
+        playGameOnAOTest(b, 3, 1)
+    elif (chosenNumber == 5):
+        playGameOnAOTest(b, 1, 3)
+    else:
         numberError()
+
 
 def askUser(b: chess.Board):
     while True:
@@ -436,14 +461,14 @@ def askUser(b: chess.Board):
             aoChoiceMenu(b)
         elif (chosenNumber == 3):
             compareMenu(b)
-        else :
+        else:
             numberError()
         pass
 
 
 if __name__ == '__main__':
     board = chess.Board()
-    askUser(board)
+    # askUser(board)
     # deroulementRandom(board)
     ## EXO 1 test:
     # possibleGamesTest(board)
@@ -454,3 +479,6 @@ if __name__ == '__main__':
     ## EXO 3
     # playGameOnAOTest(board)
     # print("nb_nodesAO =", nb_nodes_AO)
+
+    ##my Test
+    playGameOnAOTest(board, 3, 3)
