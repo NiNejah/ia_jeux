@@ -32,10 +32,20 @@ def displayTime(start: float, end: float, functionName: str):
     m = 0
     s = end - start
     if s > 60:
-        m = s / 60
+        m = s // 60
         s %= 60
     print("take {} Minutes {:.2} Seconds as a run time".format(m, s))
 
+'''************************************* EXO 1.1 *************************************'''
+'''Le facteur de branchement de cet arbre est 3.
+Il n'est pas nécessaire que toutes les branches de l'arbre soit de même hauteur car toutes les parties n'ont pas la même durée'''
+
+'''************************************* EXO 1.2 *************************************'''
+'''Le meilleur plateau pour Ami est celui où on obtient 8. Pour ennemi, le meilleur plateau est -4. Si deux noeuds de l'arbre ont un unique fils alors c'est une
+mauvaise chose pour l'ami car il est alors obligé de jouer le coup ennemi remonté.'''
+
+'''************************************* EXO 1.3 *************************************'''
+'''On peut remplacer ?? par toute valeur inférieure ou égale à 3.'''
 
 '''************************************* EXO2.1 *************************************'''
 # global variable to count the number of node in minmax
@@ -208,20 +218,31 @@ def playGame(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str:
             return b.result()
 
 
-def playGameTest(b: chess.Board):
-    amiUserDepth = int(input("AMI depth : "))
-    ennUserDepth = int(input("ENNEMI depth : "))
+def playGameTest(b: chess.Board, amiUserDepth : int, ennUserDepth : int):
     s = time.time()
     res = playGame(b, amiUserDepth, ennUserDepth)
     e = time.time()
     print(f"* AMI depth = {amiUserDepth}, ENNEMI depth = {ennUserDepth}")
     displayTime(s, e, "Max - Min")
-    print("*** ", "AMI WIN" if res == "1-0" else "ENNEMI WIN" if res == "0-1" else "EGA", " ***")
+    print("*** ", "AMI WIN" if res == "1-0" else "ENNEMI WIN" if res == "0-1" else "EGALITE", " ***")
 
 
 '''********************************************************************************'''
 
 '''************************** EXO3 : L’alpha et l’oméga de α − β *************************'''
+
+'''Comparaison des temps de recherche et du nombre de noeuds parcourus'''
+
+'''Nombre de noeuds parcourus et durée pour MinMax :'''
+'''Profondeur (1,1) : 1626 noeuds parcourus en 0.77 secondes'''
+'''Profondeur (2,2) : 62370 noeuds parcourus en 43 secondes'''
+'''Profondeur (3,3) : 1999189 noeuds parcourus en 16 minutes'''
+
+'''Nombre de noeuds parcourus et durée pour Alpha-Oméga :'''
+'''Profondeur (1,1) : 1626 noeuds parcourus en 0.77 secondes'''
+'''Profondeur (2,2) : 62370 noeuds parcourus en 0.77 secondes'''
+'''Profondeur (3,3) : 713023 noeuds parcourus en 0.77 secondes'''
+
 # global variable used to count the number
 nb_nodes_AO = 0
 
@@ -303,29 +324,81 @@ def playGameOnAO(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str
             return b.result()
 
 
-def playGameOnAOTest(b: chess.Board):
-    amiUserDepth = int(input("AMI depth : "))
-    ennUserDepth = int(input("ENNEMI depth : "))
+def playGameOnAOTest(b: chess.Board, amiUserDepth: int, ennUserDepth: int):
     s = time.time()
     res = playGameOnAO(b, amiUserDepth, ennUserDepth)
     e = time.time()
     print(f"* AMI depth = {amiUserDepth}, ENNEMI depth = {ennUserDepth}")
     displayTime(s, e, "Alpha - Omega")
-    print("*** ", "AMI WIN" if res == "1-0" else "ENNEMI WIN" if res == "0-1" else "EGA", " ***")
+    print("*** ", "AMI WIN" if res == "1-0" else "ENNEMI WIN" if res == "0-1" else "EGALITE", " ***")
 
 
 '''********************************************************************************'''
-
+def numberError():
+    print("That's not a valid number")
 
 def mainMenu():
     print(" 1 - Using MinMax algo.")
     print(" 2 - Using Alpha Omega algo.")
     print(" 3 - Comparing the two algo.")
 
+def depthMenu():
+    print(" 1 - Depth (AMI = 1, ENNEMI = 1)")
+    print(" 2 - Depth (AMI = 2, ENNEMI = 2)")
+    print(" 3 - Depth (AMI = 3, ENNEMI = 3)")
+    print(" 4 - Depth (AMI = 3, ENNEMI = 1)")
+    print(" 5 - Depth (AMI = 1, ENNEMI = 3)")
 
-def askUser():
-    mainMenu()
+def compareMenu(b: chess.Board):
+    print(" 1 - MinMax (AMI = 1, ENNEMI = 1) VS Alpha-Oméga (AMI = 1, ENNEMI = 1)")
+    print(" 2 - MinMax (AMI = 2, ENNEMI = 2) VS Alpha-Oméga (AMI = 2, ENNEMI = 2)")
+    print(" 3 - MinMax (AMI = 3, ENNEMI = 3) VS Alpha-Oméga (AMI = 3, ENNEMI = 3)")
+
+def minMaxChoiceMenu(b: chess.Board) :
+    depthMenu()
+    chosenNumber = int(input("Enter the number corresponding to your choice : "))
+    if (chosenNumber == 1) :
+        playGameTest(b,1,1)
+    elif (chosenNumber == 2) :
+        playGameTest(b,2,2)
+    elif (chosenNumber == 3) :
+        playGameTest(b,3,3)
+    elif (chosenNumber == 4) :
+        playGameTest(b,3,1)
+    elif (chosenNumber == 5) :
+        playGameTest(b,1,3)
+    else :
+        numberError()
+
+def aoChoiceMenu(b: chess.Board) :
+    depthMenu()
+    chosenNumber = int(input("Enter the number corresponding to your choice : "))
+    if (chosenNumber == 1) :
+        playGameOnAOTest(b,1,1)
+    elif (chosenNumber == 2) :
+        playGameOnAOTest(b,2,2)
+    elif (chosenNumber == 3) :
+        playGameOnAOTest(b,3,3)
+    elif (chosenNumber == 4) :
+        playGameOnAOTest(b,3,1)
+    elif (chosenNumber == 5) :
+        playGameOnAOTest(b,1,3)
+    else :
+        numberError()
+
+def askUser(b: chess.Board):
     while True:
+        b.reset()
+        mainMenu()
+        chosenNumber = int(input("Enter the number corresponding to your choice : "))
+        if (chosenNumber == 1):
+            minMaxChoiceMenu(b)
+        elif (chosenNumber == 2):
+            aoChoiceMenu(b)
+        elif (chosenNumber == 3):
+            compareMenu(b)
+        else :
+            numberError()
         pass
 
 
@@ -333,13 +406,14 @@ def askUser():
 
 if __name__ == '__main__':
     board = chess.Board()
+    askUser(board)
     # deroulementRandom(board)
     ## EXO 1 test:
     # possibleGamesTest(board)
     # EXO 2 test :
-    playGameTest(board)
-    print("nb_nodes =", nb_nodes)
-    board.reset()
+    # playGameTest(board)
+    # print("nb_nodes =", nb_nodes)
+    # board.reset()
     ## EXO 3
-    playGameOnAOTest(board)
-    print("nb_nodesAO =", nb_nodes_AO)
+    # playGameOnAOTest(board)
+    # print("nb_nodesAO =", nb_nodes_AO)
