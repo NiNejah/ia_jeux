@@ -225,9 +225,13 @@ def playGameTest(b: chess.Board):
 # globals variables used to count the number
 nb_nodes_AO = 0
 bestScoreMove = None
+saveBestMove = None
 worstScoreMove = None
+saveWorstMove = None
 # Iterative Deepening
-timeAlphaOmegaStart = None
+timeAlphaOmegaStart = 0.
+TIMEOUT = 2
+timeout = False
 
 
 # alpha = -inf
@@ -235,13 +239,21 @@ def maxMinAlphaOmega(b: chess.Board, alpha: float, omega: float, depth: int = 3,
                      maximizer: bool = True) -> float:
     global bestScoreMove
     global worstScoreMove
+
+    global timeAlphaOmegaStart
+    global timeout
+
     global nb_nodes_AO
     nb_nodes_AO += 1
+
     if depth == 0:
         return evaluation(b)
     if b.is_game_over():
         return evaluationGameOver(b)
     if maximizer:
+        if time.time() - timeAlphaOmegaStart > TIMEOUT:
+            timeout = True
+            return alpha
         # bestScore = -inf
         for m in b.generate_legal_moves():
             b.push(m)
@@ -258,6 +270,9 @@ def maxMinAlphaOmega(b: chess.Board, alpha: float, omega: float, depth: int = 3,
                 return omega
         return alpha
     else:
+        if time.time() - timeAlphaOmegaStart > TIMEOUT:
+            timeout = True
+            return alpha
         # worstScore = inf
         for m in b.generate_legal_moves():
             b.push(m)
@@ -277,14 +292,40 @@ def maxMinAlphaOmega(b: chess.Board, alpha: float, omega: float, depth: int = 3,
 
 def maxAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
     global bestScoreMove
-    maxMinAlphaOmega(b, -inf, inf, depth, depth, True)
-    return bestScoreMove
+    global timeout
+    global timeAlphaOmegaStart
+    global saveBestMove
+    timeout = False
+    timeAlphaOmegaStart = time.time()
+    d = 0
+    while True:
+        if d > 0:
+            saveBestMove = bestScoreMove
+            print(" I change the move ment to", saveBestMove.from_square, "->", saveBestMove.to_square, ":in depth = ",
+                  depth + d - 1)
+            # print("start at", timeAlphaOmegaStart, "/ now it is = ", time.time(), "the diferant is ",
+            #       time.time() - timeAlphaOmegaStart)
+        maxMinAlphaOmega(b, -inf, inf, depth + d, depth + d, True)
+        d += 1
+        if timeout:
+            return saveBestMove
 
 
 def minAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
     global worstScoreMove
-    maxMinAlphaOmega(b, -inf, inf, depth, depth, False)
-    return worstScoreMove
+    global timeout
+    global timeAlphaOmegaStart
+    global saveWorstMove
+    timeout = False
+    timeAlphaOmegaStart = time.time()
+    d = 0
+    while True:
+        if d > 0:
+            saveWorstMove = worstScoreMove
+        maxMinAlphaOmega(b, -inf, inf, depth, depth, False)
+        d += 1
+        if timeout:
+            return saveWorstMove
 
 
 def playGameOnAO(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str:
