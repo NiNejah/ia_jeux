@@ -244,136 +244,131 @@ def playGameTest(b: chess.Board, amiUserDepth: int, ennUserDepth: int):
 '''Profondeur (2,2) : 62370 noeuds parcourus en 0.77 secondes'''
 '''Profondeur (3,3) : 713023 noeuds parcourus en 0.77 secondes'''
 
+
 # globals variables used to count the number
 nb_nodes_AO = 0
-bestScoreMove = None
-saveBestMove = None
-worstScoreMove = None
-saveWorstMove = None
+
 # Iterative Deepening
+saveBestMove = None
+saveWorstMove = None
 timeAlphaOmegaStart = 0.
-TIMEOUT = 2
+TIMEOUT = 10
 timeout = False
 
-
-# alpha = -inf
-def maxMinAlphaOmega(b: chess.Board, alpha: float, omega: float, depth: int = 3, originalDepth: int = 3,
-                     maximizer: bool = True) -> float:
-    global bestScoreMove
-    global worstScoreMove
-
-    global timeAlphaOmegaStart
-    global timeout
-
+def alphaOmega(b: chess.Board, alpha: float, omega: float, saveMovement ,depth: int = 3, originalDepth: int = 3, maximizer: bool = True) -> float:
     global nb_nodes_AO
     nb_nodes_AO += 1
 
+    global timeout
     if depth == 0:
         return evaluation(b)
     if b.is_game_over():
         return evaluationGameOver(b)
+    # for IterativeDeepening functionalety 
+    if time.time() - timeAlphaOmegaStart > TIMEOUT:
+        timeout = True
+        return alpha if maximizer else omega
     if maximizer:
-        if time.time() - timeAlphaOmegaStart > TIMEOUT:
-            timeout = True
-            return alpha
-        # bestScore = -inf
         for m in b.generate_legal_moves():
             b.push(m)
-            eval = maxMinAlphaOmega(b, alpha, omega, depth - 1, originalDepth, False)
+            eval = alphaOmega(b, alpha, omega, saveMovement,depth - 1,originalDepth, False)
             b.pop()
-            # bestScore = min(eval, bestScore)
-            if bestScoreMove is None:
-                bestScoreMove = m
-            if eval > alpha:
+            if eval > alpha :
                 alpha = eval
-                if depth == originalDepth:
-                    bestScoreMove = m
+                if depth == originalDepth : 
+                    saveMovement["best"] = m 
             if alpha >= omega:
                 return omega
         return alpha
     else:
-        if time.time() - timeAlphaOmegaStart > TIMEOUT:
-            timeout = True
-            return alpha
-        # worstScore = inf
         for m in b.generate_legal_moves():
             b.push(m)
-            eval = maxMinAlphaOmega(b, alpha, omega, depth - 1, originalDepth, True)
+            eval = alphaOmega(b, alpha, omega,saveMovement, depth - 1,originalDepth, True)
             b.pop()
-            # worstScore = min(eval, worstScore)
-            if worstScoreMove is None:
-                worstScoreMove = m
-            if eval < omega:
+            if eval < omega :
                 omega = eval
-                if depth == originalDepth:
-                    worstScoreMove = m
+                if depth == originalDepth  : 
+                    saveMovement["worst"] = m 
             if alpha >= omega:
                 return alpha
         return omega
 
 
-def maxAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
-    global bestScoreMove
-    maxMinAlphaOmega(b, -inf, inf, depth, depth, True)
-    return bestScoreMove
+def getMovement(b: chess.Board, depth: int = 3 , maximizer: bool = True) -> chess.Move:
+    global nb_nodes_AO
+    nb_nodes_AO += 1
+    move = {
+    "best" : None,
+    "worst" : None
+    }
+    alphaOmega(b, -inf, inf,move, depth,depth,maximizer)
+    return move["best"] if maximizer else move["worst"]
 
 
-def minAOMovement(b: chess.Board, depth: int = 3) -> chess.Move:
-    global worstScoreMove
-    maxMinAlphaOmega(b, -inf, inf, depth, depth, False)
-    return worstScoreMove
-
-
-def maxAOMovementIterativeDeepening(b: chess.Board, depth: int = 3) -> chess.Move:
-    global bestScoreMove
+def getMovementIterativeDeepening(b: chess.Board, depth: int = 3 , maximizer: bool = True) -> chess.Move:
+    global nb_nodes_AO
     global timeout
     global timeAlphaOmegaStart
-    global saveBestMove
+    globalMovment : chess.Move = None
+    nb_nodes_AO += 1
+    moves = {
+    "best" : None,
+    "worst" : None,
+    }
     timeout = False
     timeAlphaOmegaStart = time.time()
-    d = 0
-    while True:
-        if d > 0:
-            saveBestMove = bestScoreMove
-            # print(" I change the move ment to", saveBestMove.from_square, "->", saveBestMove.to_square, ":in depth = ",
-            #       depth + d - 1)
-            # print("start at", timeAlphaOmegaStart, "/ now it is = ", time.time(), "the diferant is ",
-            #       time.time() - timeAlphaOmegaStart)
-        maxMinAlphaOmega(b, -inf, inf, depth + d, depth + d, True)
-        d += 1
+    d = 0 
+    while True : 
+        if d > 0 :
+            globalMovment = moves["best"] if maximizer else moves["worst"] 
+        d +=1 
+        alphaOmega(b, -inf, inf,moves, depth+d,depth+d,maximizer)
         if timeout:
-            return saveBestMove if saveBestMove is not None else bestScoreMove
+            if globalMovment != None :
+                print("---- change the move ment to", globalMovment.from_square, "->", globalMovment.to_square, ":in depth = ",
+                depth + d - 1)
+                return globalMovment 
+            else :
+                print ("Rand depth = ",depth+d)
+                return randomMove(b)
 
 
-def minAOMovementIterativeDeepening(b: chess.Board, depth: int = 3) -> chess.Move:
-    global worstScoreMove
-    global timeout
-    global timeAlphaOmegaStart
-    global saveWorstMove
-    timeout = False
-    timeAlphaOmegaStart = time.time()
-    d = 0
-    # depth = 1 -> 2 -> 3 -> 4
-    while True:
-        if d > 0:
-            saveWorstMove = worstScoreMove
-            # on fait pas ça : depth += d
-        maxMinAlphaOmega(b, -inf, inf, depth + d, depth + d, False)
-        d += 1
-        if timeout:
-            # print("change the move ment to", saveWorstMove.from_square, "->", saveWorstMove.to_square, ":in depth = ",
-            #       depth + d - 1)
-            return saveWorstMove if saveWorstMove is not None else worstScoreMove
+
+
+
+# def minAOMovementIterativeDeepening(b: chess.Board, depth: int = 3) -> chess.Move:
+#     global worstScoreMove
+#     global timeout
+#     global timeAlphaOmegaStart
+#     global saveWorstMove
+#     timeout = False
+#     timeAlphaOmegaStart = time.time()
+#     d = 0
+#     # depth = 1 -> 2 -> 3 -> 4
+#     while True:
+#         if d > 0:
+#             saveWorstMove = worstScoreMove
+#             # on fait pas ça : depth += d
+#         maxMinAlphaOmegaIterativeDeepening(b, -inf, inf, depth + d, depth + d, False)
+#         d += 1
+#         if timeout:
+#             # print("change the move ment to", saveWorstMove.from_square, "->", saveWorstMove.to_square, ":in depth = ",
+#             #       depth + d - 1)
+#             return saveWorstMove if saveWorstMove is not None else worstScoreMove
 
 
 def playGameOnAO(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str:
     while True:
-        b.push(maxAOMovementIterativeDeepening(b, depthAmi))
+        m = getMovementIterativeDeepening(b, depthAmi,True) 
+        # bmove = m if m is not None else randomMove(b) 
+        b.push(m)
         # print(b)
         if b.is_game_over():
             return b.result()
         # print("--------------------")
-        b.push(minAOMovementIterativeDeepening(b, depthEnnemi))
+        m = getMovementIterativeDeepening(b, depthEnnemi,False)
+        # wmove = m if m is not None else randomMove(b) 
+        b.push(m)
         # print(b)
         # print("--------------------")
         if b.is_game_over():
@@ -479,6 +474,3 @@ if __name__ == '__main__':
     ## EXO 3
     # playGameOnAOTest(board)
     # print("nb_nodesAO =", nb_nodes_AO)
-
-    ##my Test
-    playGameOnAOTest(board, 3, 3)
