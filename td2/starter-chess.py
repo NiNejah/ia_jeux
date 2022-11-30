@@ -32,7 +32,7 @@ def displayTime(start: float, end: float, functionName: str):
     m = 0
     s = end - start
     if s > 60:
-        m = s // 60
+        m = s // 60.
         s %= 60
     print("take {} Minutes {:.2} Seconds as a run time".format(int(m), s))
 
@@ -169,7 +169,7 @@ def evaluationGameOver(b: chess.Board) -> int:
     else:
         return 0
 
-
+# fonction qui récupère à l'aide de minMax le meilleur mouvement à profondeur depth dans l'arbre son score
 def maxMovement(b: chess.Board, depth: int = 3) -> chess.Move:
     global nb_nodes
     nb_nodes += 1
@@ -184,7 +184,7 @@ def maxMovement(b: chess.Board, depth: int = 3) -> chess.Move:
             bestScoreMove = m
     return bestScoreMove
 
-
+# fonction qui récupère à l'aide de maxMix le pire mouvement à profondeur depth dans l'arbre et renvoie son score
 def minMovement(b: chess.Board, depth: int = 3) -> chess.Move:
     global nb_nodes
     nb_nodes += 1
@@ -237,6 +237,7 @@ timeAlphaOmegaStart = 0.
 TIMEOUT = 10
 timeout = False
 
+# fonction Alpha-Beta
 def alphaOmega(b: chess.Board, alpha: float, omega: float, saveMovement ,depth: int = 3, originalDepth: int = 3, maximizer: bool = True, isDeepening :bool = False) -> float:
     global nb_nodes_AO
     nb_nodes_AO += 1
@@ -275,7 +276,7 @@ def alphaOmega(b: chess.Board, alpha: float, omega: float, saveMovement ,depth: 
                 return alpha
         return omega
 
-
+# fonction qui renvoie le pire ou le meilleur mouvement en utilisant alphaOmega en fonction de la valeur de la variable maximizer
 def getMovement(b: chess.Board, depth: int = 3 , maximizer: bool = True) -> chess.Move:
     global nb_nodes_AO
     nb_nodes_AO += 1
@@ -286,7 +287,8 @@ def getMovement(b: chess.Board, depth: int = 3 , maximizer: bool = True) -> ches
     alphaOmega(b, -inf, inf,move, depth,depth,maximizer)
     return move["best"] if maximizer else move["worst"]
 
-
+# fonction pour faire un iterative deepening sur alpha omega et qui retourne le meilleur ou le pire mouvement en fonction de la valeur de la variable maximizer
+# si la profondeur passée en paramètre est trop élevée pour le temps de recherche stocké dans TIMEOUT alors renvoie un randomMove()
 def getMovementIterativeDeepening(b: chess.Board, depth: int = 3 , maximizer: bool = True) -> chess.Move:
     global nb_nodes_AO
     global timeout
@@ -315,32 +317,34 @@ def getMovementIterativeDeepening(b: chess.Board, depth: int = 3 , maximizer: bo
                 return randomMove(b)
 
 
-
-
-
-# def minAOMovementIterativeDeepening(b: chess.Board, depth: int = 3) -> chess.Move:
-#     global worstScoreMove
-#     global timeout
-#     global timeAlphaOmegaStart
-#     global saveWorstMove
-#     timeout = False
-#     timeAlphaOmegaStart = time.time()
-#     d = 0
-#     # depth = 1 -> 2 -> 3 -> 4
-#     while True:
-#         if d > 0:
-#             saveWorstMove = worstScoreMove
-#             # on fait pas ça : depth += d
-#         maxMinAlphaOmegaIterativeDeepening(b, -inf, inf, depth + d, depth + d, False)
-#         d += 1
-#         if timeout:
-#             # print("change the move ment to", saveWorstMove.from_square, "->", saveWorstMove.to_square, ":in depth = ",
-#             #       depth + d - 1)
-#             return saveWorstMove if saveWorstMove is not None else worstScoreMove
-
 # fonction utilisée pour jouer les coups des deux joueurs en utilisant Alpha-Oméga et pour vérifier si le jeu ne se termine pas après avoir joué le
 # coup.
 def playGameOnAO(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str:
+    while True:
+        m = getMovement(b, depthAmi,True) 
+        # bmove = m if m is not None else randomMove(b) 
+        b.push(m)
+        # print(b)
+        if b.is_game_over():
+            return b.result()
+        # print("--------------------")
+        m = getMovement(b, depthEnnemi,False)
+        # wmove = m if m is not None else randomMove(b) 
+        b.push(m)
+        # print(b)
+        # print("--------------------")
+        if b.is_game_over():
+            return b.result()
+
+def playGameOnAOTest(b: chess.Board, amiUserDepth: int, ennUserDepth: int):
+    s = time.time()
+    res = playGameOnAO(b, amiUserDepth, ennUserDepth)
+    e = time.time()
+    print(f"* AMI depth = {amiUserDepth}, ENNEMI depth = {ennUserDepth}")
+    displayTime(s, e, "Alpha - Omega")
+    print("*** ", "AMI WIN" if res == "1-0" else "ENNEMI WIN" if res == "0-1" else "EGALITE", " ***")
+
+def playGameOnAOID(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1 ) -> str:
     while True:
         m = getMovementIterativeDeepening(b, depthAmi,True) 
         # bmove = m if m is not None else randomMove(b) 
@@ -357,12 +361,12 @@ def playGameOnAO(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str
         if b.is_game_over():
             return b.result()
 
-def playGameOnAOTest(b: chess.Board, amiUserDepth: int, ennUserDepth: int):
+def playGameOnAOIDTest(b: chess.Board, amiUserDepth: int, ennUserDepth: int):
     s = time.time()
-    res = playGameOnAO(b, amiUserDepth, ennUserDepth)
+    res = playGameOnAOID(b, amiUserDepth, ennUserDepth)
     e = time.time()
     print(f"* AMI depth = {amiUserDepth}, ENNEMI depth = {ennUserDepth}")
-    displayTime(s, e, "Alpha - Omega")
+    displayTime(s, e, "Alpha - Omega Iterative Deepening")
     print("*** ", "AMI WIN" if res == "1-0" else "ENNEMI WIN" if res == "0-1" else "EGALITE", " ***")
 
 def playGameAmiMinMax(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str:
@@ -390,13 +394,27 @@ def playGameEnnemiMinMax(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1
         # print("--------------------")
         if b.is_game_over():
             return b.result()
+# TODO 
+# def playGame(b: chess.Board, movementMethod  ,depthAmi: int = 1, depthEnnemi: int = 1 ):
+#     while True:
+#         b.push(movementMethod(b, depthAmi))
+#         # print(b)
+#         if b.is_game_over():
+#             return b.result()
+#         # print("--------------------")
+#         b.push(movementMethod(b, depthEnnemi))
+#         # print(b)
+#         # print("--------------------")
+#         if b.is_game_over():
+#             return b.result()
 
 '''********************************************************************************'''
 
-
+# Méthodes pour l'interface
 def numberError():
     print("That's not a valid number")
 
+# fonction pour que l'utilisateur choisit les profondeurs de recherche Ami et Ennemi
 def depthChoice():
     amiDepth = int(input("Enter the depth for AMI : "))
     ennemiDepth = int(input("Enter the depth for ENNEMI : "))
@@ -405,7 +423,8 @@ def depthChoice():
 def mainMenu():
     print(" 1 - Using MinMax algo.")
     print(" 2 - Using Alpha Omega algo.")
-    print(" 3 - Comparing the two algo.")
+    print(" 3 - Using Alpha Omega Iterative Deepening algo.")
+    print(" 4 - Comparing the two algo.")
 
 def compareMenu(b: chess.Board, amiDepth: int, ennemiDepth: int):
     print(" 1 - MinMax (AMI) VS Alpha-Oméga (ENNEMI)")
@@ -418,7 +437,7 @@ def compareMenu(b: chess.Board, amiDepth: int, ennemiDepth: int):
     else:
         numberError()
 
-
+# fonction utilisée pour communiquer avec l'utilisateur
 def askUser(b: chess.Board):
     while True:
         b.reset()
@@ -430,6 +449,8 @@ def askUser(b: chess.Board):
         elif (chosenNumber == 2):
             playGameOnAOTest(b, amiDepth, ennemiDepth)
         elif (chosenNumber == 3):
+            playGameOnAOIDTest(b, amiDepth, ennemiDepth)
+        elif (chosenNumber == 4):
             compareMenu(b, amiDepth, ennemiDepth)
         else:
             numberError()
