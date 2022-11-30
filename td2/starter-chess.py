@@ -26,7 +26,7 @@ def deroulementRandom(b):
     b.pop()
 
 
-##aux function
+## aux function to print the time
 def displayTime(start: float, end: float, functionName: str):
     print(f" {functionName} function ", end=" ")
     m = 0
@@ -36,23 +36,12 @@ def displayTime(start: float, end: float, functionName: str):
         s %= 60
     print("take {} Minutes {:.2} Seconds as a run time".format(int(m), s))
 
-
-'''************************************* EXO 1.1 *************************************'''
-'''Le facteur de branchement de cet arbre est 3.
-Il n'est pas nécessaire que toutes les branches de l'arbre soit de même hauteur car toutes les parties n'ont pas la même durée'''
-
-'''************************************* EXO 1.2 *************************************'''
-'''Le meilleur plateau pour Ami est celui où on obtient 8. Pour ennemi, le meilleur plateau est -4. Si deux noeuds de l'arbre ont un unique fils alors c'est une
-mauvaise chose pour l'ami car il est alors obligé de jouer le coup ennemi remonté.'''
-
-'''************************************* EXO 1.3 *************************************'''
-'''On peut remplacer ?? par toute valeur inférieure ou égale à 3.'''
-
-'''************************************* EXO2.1 *************************************'''
 # global variable to count the number of node in minmax
 nb_nodes = 0
 
-
+# fonction récursive auxiliare de la fonction possibleGames. Cette fonction va parcourir et compter le nombre de noeuds qu'elle va parcourir en les
+# ajoutant à la liste nodes qui lui est fourni par la fonction possibleGames. Si la fonction tombe sur un jeu terminée ou qu'il ne pas allez plus 
+# profondément dans l'arbre, alors il ajoute l'élément à la liste games.
 def possibleGamesAux(b: chess.Board, depth: int, games: list, nodes: list):
     nodes.append(1)
     if b.is_game_over() or depth == 0:
@@ -63,7 +52,8 @@ def possibleGamesAux(b: chess.Board, depth: int, games: list, nodes: list):
             possibleGamesAux(b, depth - 1, games, nodes)
             b.pop()
 
-
+# fonction qui permet de calculer et de retourner le nombre de feuilles/jeux terminés ainsi que le nombre de noeuds parcourus à une certaine profondeur
+# dans l'arbre des possibilités en appelant la fonction récursive possibleGamesAux
 def possibleGames(b: chess.Board, depth: int = 3):
     game = []
     nodes = []
@@ -84,7 +74,7 @@ def possibleGamesTest(b: chess.Board):
 
 '''************************************* EXO2 (1-2-3) *************************************'''
 
-
+# fonction qui permet de calculer et de retourner la distance euclidienne entre 2 pièces du plateau
 def dist(pos1: int, pos2: int):
     x1 = pos1 % 8
     y1 = pos1 // 8
@@ -92,13 +82,17 @@ def dist(pos1: int, pos2: int):
     y2 = pos2 // 8
     return sqrt((pow(x1 - x2, 2)) + (pow(y1 - y2, 2)))
 
-
+# fonction qui permet de renvoyer la position sur le plateau d'une pièce passée en paramètre
 def findPos(b: chess.Board, piece: str) -> int:
     for k, p in b.piece_map().items():
         if p.symbol() == piece:
             return k
     return -1
 
+# fonction qui évalue le score de la partie actuelle en donnant un score au pièce. Les pièces ennemies (noires/minuscules) retirent leur valeur au 
+# score total tandis que les pièces amies (blanches/majuscules) ajoutent leur valeur au score total.
+# Les valeurs des deux types de pièces sont augmentées ou réduites en fonction de leur position sur le plateau de jeu et de leur distance par
+# rapport au roi.
 
 def evaluation(b: chess.Board) -> float:
     value = {
@@ -165,7 +159,8 @@ def maxMin(b: chess.Board, depth: int = 3) -> float:
         bestScore = max(eval, bestScore)
     return bestScore
 
-
+# fonction utilisée à la fin de chaque jeu. Ajoute des points au score total en fonction de qui gagne la partie. Permet d'inciter l'IA à faire des
+# coups lui permettant de gagner.
 def evaluationGameOver(b: chess.Board) -> int:
     if b.result() == "1-0":
         return 500
@@ -204,7 +199,7 @@ def minMovement(b: chess.Board, depth: int = 3) -> chess.Move:
             worstScoreMove = m
     return worstScoreMove
 
-
+# fonction utilisée pour jouer les coups des deux joueurs en utilisant minMax et pour vérifier si le jeu ne se termine pas après avoir joué le coup.
 def playGame(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str:
     while True:
         b.push(maxMovement(b, depthAmi))
@@ -218,7 +213,7 @@ def playGame(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str:
         if b.is_game_over():
             return b.result()
 
-
+# fonction permettant d'appeler playGame tout en calculant son temps d'exécution
 def playGameTest(b: chess.Board, amiUserDepth: int, ennUserDepth: int):
     s = time.time()
     res = playGame(b, amiUserDepth, ennUserDepth)
@@ -232,19 +227,6 @@ def playGameTest(b: chess.Board, amiUserDepth: int, ennUserDepth: int):
 
 '''************************** EXO3 : L’alpha et l’oméga de α − β *************************'''
 
-'''Comparaison des temps de recherche et du nombre de noeuds parcourus'''
-
-'''Nombre de noeuds parcourus et durée pour MinMax :'''
-'''Profondeur (1,1) : 1626 noeuds parcourus en 0.77 secondes'''
-'''Profondeur (2,2) : 62370 noeuds parcourus en 43 secondes'''
-'''Profondeur (3,3) : 1999189 noeuds parcourus en 16 minutes'''
-
-'''Nombre de noeuds parcourus et durée pour Alpha-Oméga :'''
-'''Profondeur (1,1) : 1626 noeuds parcourus en 0.77 secondes'''
-'''Profondeur (2,2) : 62370 noeuds parcourus en 0.77 secondes'''
-'''Profondeur (3,3) : 713023 noeuds parcourus en 0.77 secondes'''
-
-
 # globals variables used to count the number
 nb_nodes_AO = 0
 
@@ -255,7 +237,7 @@ timeAlphaOmegaStart = 0.
 TIMEOUT = 10
 timeout = False
 
-def alphaOmega(b: chess.Board, alpha: float, omega: float, saveMovement ,depth: int = 3, originalDepth: int = 3, maximizer: bool = True) -> float:
+def alphaOmega(b: chess.Board, alpha: float, omega: float, saveMovement ,depth: int = 3, originalDepth: int = 3, maximizer: bool = True, isDeepening :bool = False) -> float:
     global nb_nodes_AO
     nb_nodes_AO += 1
 
@@ -264,14 +246,14 @@ def alphaOmega(b: chess.Board, alpha: float, omega: float, saveMovement ,depth: 
         return evaluation(b)
     if b.is_game_over():
         return evaluationGameOver(b)
-    # for IterativeDeepening functionalety 
-    if time.time() - timeAlphaOmegaStart > TIMEOUT:
+    # for IterativeDeepening functionality 
+    if isDeepening and time.time() - timeAlphaOmegaStart > TIMEOUT:
         timeout = True
         return alpha if maximizer else omega
     if maximizer:
         for m in b.generate_legal_moves():
             b.push(m)
-            eval = alphaOmega(b, alpha, omega, saveMovement,depth - 1,originalDepth, False)
+            eval = alphaOmega(b, alpha, omega, saveMovement,depth - 1,originalDepth, False,isDeepening)
             b.pop()
             if eval > alpha :
                 alpha = eval
@@ -283,7 +265,7 @@ def alphaOmega(b: chess.Board, alpha: float, omega: float, saveMovement ,depth: 
     else:
         for m in b.generate_legal_moves():
             b.push(m)
-            eval = alphaOmega(b, alpha, omega,saveMovement, depth - 1,originalDepth, True)
+            eval = alphaOmega(b, alpha, omega,saveMovement, depth - 1,originalDepth, True,isDeepening)
             b.pop()
             if eval < omega :
                 omega = eval
@@ -322,7 +304,7 @@ def getMovementIterativeDeepening(b: chess.Board, depth: int = 3 , maximizer: bo
         if d > 0 :
             globalMovment = moves["best"] if maximizer else moves["worst"] 
         d +=1 
-        alphaOmega(b, -inf, inf,moves, depth+d,depth+d,maximizer)
+        alphaOmega(b, -inf, inf,moves, depth+d,depth+d,maximizer,True)
         if timeout:
             if globalMovment != None :
                 print("---- change the move ment to", globalMovment.from_square, "->", globalMovment.to_square, ":in depth = ",
@@ -356,7 +338,8 @@ def getMovementIterativeDeepening(b: chess.Board, depth: int = 3 , maximizer: bo
 #             #       depth + d - 1)
 #             return saveWorstMove if saveWorstMove is not None else worstScoreMove
 
-
+# fonction utilisée pour jouer les coups des deux joueurs en utilisant Alpha-Oméga et pour vérifier si le jeu ne se termine pas après avoir joué le
+# coup.
 def playGameOnAO(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str:
     while True:
         m = getMovementIterativeDeepening(b, depthAmi,True) 
@@ -374,7 +357,6 @@ def playGameOnAO(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str
         if b.is_game_over():
             return b.result()
 
-
 def playGameOnAOTest(b: chess.Board, amiUserDepth: int, ennUserDepth: int):
     s = time.time()
     res = playGameOnAO(b, amiUserDepth, ennUserDepth)
@@ -383,6 +365,31 @@ def playGameOnAOTest(b: chess.Board, amiUserDepth: int, ennUserDepth: int):
     displayTime(s, e, "Alpha - Omega")
     print("*** ", "AMI WIN" if res == "1-0" else "ENNEMI WIN" if res == "0-1" else "EGALITE", " ***")
 
+def playGameAmiMinMax(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str:
+    while True:
+        b.push(maxMovement(b, depthAmi))
+        # print(b)
+        if b.is_game_over():
+            return b.result()
+        # print("--------------------")
+        b.push(getMovement(b, depthEnnemi,False))
+        # print(b)
+        # print("--------------------")
+        if b.is_game_over():
+            return b.result()
+
+def playGameEnnemiMinMax(b: chess.Board, depthAmi: int = 1, depthEnnemi: int = 1) -> str:
+    while True:
+        b.push(getMovement(b, depthAmi,True))
+        # print(b)
+        if b.is_game_over():
+            return b.result()
+        # print("--------------------")
+        b.push(minMovement(b, depthEnnemi))
+        # print(b)
+        # print("--------------------")
+        if b.is_game_over():
+            return b.result()
 
 '''********************************************************************************'''
 
@@ -390,57 +397,24 @@ def playGameOnAOTest(b: chess.Board, amiUserDepth: int, ennUserDepth: int):
 def numberError():
     print("That's not a valid number")
 
+def depthChoice():
+    amiDepth = int(input("Enter the depth for AMI : "))
+    ennemiDepth = int(input("Enter the depth for ENNEMI : "))
+    return amiDepth,ennemiDepth
 
 def mainMenu():
     print(" 1 - Using MinMax algo.")
     print(" 2 - Using Alpha Omega algo.")
     print(" 3 - Comparing the two algo.")
 
-
-def depthMenu():
-    print(" 1 - Depth (AMI = 1, ENNEMI = 1)")
-    print(" 2 - Depth (AMI = 2, ENNEMI = 2)")
-    print(" 3 - Depth (AMI = 3, ENNEMI = 3)")
-    print(" 4 - Depth (AMI = 3, ENNEMI = 1)")
-    print(" 5 - Depth (AMI = 1, ENNEMI = 3)")
-
-
-def compareMenu(b: chess.Board):
-    print(" 1 - MinMax (AMI = 1, ENNEMI = 1) VS Alpha-Oméga (AMI = 1, ENNEMI = 1)")
-    print(" 2 - MinMax (AMI = 2, ENNEMI = 2) VS Alpha-Oméga (AMI = 2, ENNEMI = 2)")
-    print(" 3 - MinMax (AMI = 3, ENNEMI = 3) VS Alpha-Oméga (AMI = 3, ENNEMI = 3)")
-
-
-def minMaxChoiceMenu(b: chess.Board):
-    depthMenu()
+def compareMenu(b: chess.Board, amiDepth: int, ennemiDepth: int):
+    print(" 1 - MinMax (AMI) VS Alpha-Oméga (ENNEMI)")
+    print(" 2 - Alpha-Oméga (AMI) VS MinMax (ENNEMI)")
     chosenNumber = int(input("Enter the number corresponding to your choice : "))
     if (chosenNumber == 1):
-        playGameTest(b, 1, 1)
+        playGameAmiMinMax(b,amiDepth,ennemiDepth)
     elif (chosenNumber == 2):
-        playGameTest(b, 2, 2)
-    elif (chosenNumber == 3):
-        playGameTest(b, 3, 3)
-    elif (chosenNumber == 4):
-        playGameTest(b, 3, 1)
-    elif (chosenNumber == 5):
-        playGameTest(b, 1, 3)
-    else:
-        numberError()
-
-
-def aoChoiceMenu(b: chess.Board):
-    depthMenu()
-    chosenNumber = int(input("Enter the number corresponding to your choice : "))
-    if (chosenNumber == 1):
-        playGameOnAOTest(b, 1, 1)
-    elif (chosenNumber == 2):
-        playGameOnAOTest(b, 2, 2)
-    elif (chosenNumber == 3):
-        playGameOnAOTest(b, 3, 3)
-    elif (chosenNumber == 4):
-        playGameOnAOTest(b, 3, 1)
-    elif (chosenNumber == 5):
-        playGameOnAOTest(b, 1, 3)
+        playGameEnnemiMinMax(b,amiDepth,ennemiDepth)
     else:
         numberError()
 
@@ -450,20 +424,20 @@ def askUser(b: chess.Board):
         b.reset()
         mainMenu()
         chosenNumber = int(input("Enter the number corresponding to your choice : "))
+        amiDepth, ennemiDepth = depthChoice()
         if (chosenNumber == 1):
-            minMaxChoiceMenu(b)
+            playGameTest(b, amiDepth,ennemiDepth)
         elif (chosenNumber == 2):
-            aoChoiceMenu(b)
+            playGameOnAOTest(b, amiDepth, ennemiDepth)
         elif (chosenNumber == 3):
-            compareMenu(b)
+            compareMenu(b, amiDepth, ennemiDepth)
         else:
             numberError()
-        pass
 
 
 if __name__ == '__main__':
     board = chess.Board()
-    # askUser(board)
+    askUser(board)
     # deroulementRandom(board)
     ## EXO 1 test:
     # possibleGamesTest(board)
