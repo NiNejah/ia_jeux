@@ -25,9 +25,8 @@ def deroulementRandom(b):
     deroulementRandom(b)
     b.pop()
 
-
-## aux function to print the time
 def displayTime(start: float, end: float, functionName: str):
+    ''' Fonction auxiliaire utilisée pour afficher le temps '''
     print(f" {functionName} function ", end=" ")
     m = 0
     s = end - start
@@ -36,15 +35,13 @@ def displayTime(start: float, end: float, functionName: str):
         s %= 60.0
     print("take {} Minutes {:.2} Seconds as a run time".format(int(m), s))
 
-
-# global variable to count the number of node in minmax
+''' Variable globale pour compter le nombre de noeuds à l'issue de MinMax '''
 nb_nodes = 0
 
-
-# fonction récursive auxiliare de la fonction possibleGames. Cette fonction va parcourir et compter le nombre de noeuds qu'elle va parcourir en les
-# ajoutant à la liste nodes qui lui est fourni par la fonction possibleGames. Si la fonction tombe sur un jeu terminée ou qu'il ne pas allez plus 
-# profondément dans l'arbre, alors il ajoute l'élément à la liste games.
 def possibleGamesAux(b: chess.Board, depth: int, cpt):
+    ''' Fonction récursive auxiliare de la fonction possibleGames. Cette fonction va parcourir et compter le nombre de noeuds qu'elle va parcourir en les
+    ajoutant à la liste nodes qui lui est fournie par la fonction possibleGames. Si la fonction tombe sur un jeu terminée ou qu'il ne peut pas allez plus
+    profondément dans l'arbre, alors il ajoute l'élément à la liste games.'''
     cpt["nodes"] += 1
     if b.is_game_over() or depth == 0:
         cpt["games"] += 1
@@ -54,10 +51,9 @@ def possibleGamesAux(b: chess.Board, depth: int, cpt):
             possibleGamesAux(b, depth - 1, cpt)
             b.pop()
 
-
-# fonction qui permet de calculer et de retourner le nombre de feuilles/jeux terminés ainsi que le nombre de noeuds parcourus à une certaine profondeur
-# dans l'arbre des possibilités en appelant la fonction récursive possibleGamesAux
 def possibleGames(b: chess.Board, depth: int = 3):
+    ''' Fonction qui permet de calculer et de retourner le nombre de feuilles/jeux terminés ainsi que le nombre de noeuds parcourus à une certaine profondeur
+    dans l'arbre des possibilités en appelant la fonction récursive possibleGamesAux. '''
     cpt = {
         "games": 0,
         "nodes": 0
@@ -80,8 +76,9 @@ def possibleGamesTest(b: chess.Board):
 '''************************************* EXO2 (1-2-3) *************************************'''
 
 
-# fonction qui permet de calculer et de retourner la distance euclidienne entre 2 pièces du plateau
+
 def dist(pos1: int, pos2: int):
+    ''' Fonction qui permet de calculer et de retourner la distance euclidienne entre 2 pièces du plateau. '''
     x1 = pos1 % 8
     y1 = pos1 // 8
     x2 = pos2 % 8
@@ -89,20 +86,19 @@ def dist(pos1: int, pos2: int):
     return sqrt((pow(x1 - x2, 2)) + (pow(y1 - y2, 2)))
 
 
-# fonction qui permet de renvoyer la position sur le plateau d'une pièce passée en paramètre
+
 def findPos(b: chess.Board, piece: str) -> int:
+    ''' Fonction qui permet de renvoyer la position sur le plateau d'une pièce passée en paramètre.'''
     for k, p in b.piece_map().items():
         if p.symbol() == piece:
             return k
     return -1
 
-
-# fonction qui évalue le score de la partie actuelle en donnant un score au pièce. Les pièces ennemies (noires/minuscules) retirent leur valeur au
-# score total tandis que les pièces amies (blanches/majuscules) ajoutent leur valeur au score total.
-# Les valeurs des deux types de pièces sont augmentées ou réduites en fonction de leur position sur le plateau de jeu et de leur distance par
-# rapport au roi.
-
 def evaluation(b: chess.Board) -> float:
+    ''' Fonction qui évalue le score de la partie actuelle en donnant un score aux pièces. Les pièces ennemies (noires/minuscules) retirent 
+    leur valeur au score total tandis que les pièces amies (blanches/majuscules) ajoutent leur valeur au score total.
+    Les valeurs des deux types de pièces sont augmentées ou réduites en fonction de leur position sur le plateau de jeu et de leur distance par
+    rapport au roi.'''
     value = {
         'K': 200,
         'Q': 9,
@@ -136,9 +132,10 @@ def evaluation(b: chess.Board) -> float:
     return score
 
 
-# fonction utilisée à la fin de chaque jeu. Ajoute des points au score total en fonction de qui gagne la partie.
-# Permet d'inciter l'IA à faire des coups lui permettant de gagner.
+
 def evaluationGameOver(b: chess.Board) -> int:
+    ''' Fonction utilisée à la fin de chaque jeu. Ajoute des points au score total en fonction de qui gagne la partie.
+    Permet d'inciter l'IA à faire des coups lui permettant de gagner.'''
     if b.result() == "1-0":
         return 500
     elif b.result() == "0-1":
@@ -148,6 +145,8 @@ def evaluationGameOver(b: chess.Board) -> int:
 
 
 def MaxMin(b: chess.Board, saveMovement, depth: int = 3, originalDepth: int = 3, maximizer: bool = True) -> float:
+    ''' Fonction qui lance l'algorithme MaxMin ou MinMax en fonction 
+    de la valeur de la variable maximizer.'''
     global nb_nodes
     nb_nodes += 1
     if depth == 0:
@@ -178,9 +177,9 @@ def MaxMin(b: chess.Board, saveMovement, depth: int = 3, originalDepth: int = 3,
         return worstScore
 
 
-# fonction qui récupère à l'aide de minMax le meilleur mouvement à profondeur depth dans l'arbre son score
-# fonction qui récupère à l'aide de maxMix le pire mouvement à profondeur depth dans l'arbre et renvoie son score
-def getMovementFromMixMan(b: chess.Board, depth: int = 3, maximizer: bool = True) -> chess.Move:
+def getMovementFromMinMax(b: chess.Board, depth: int = 3, maximizer: bool = True) -> chess.Move:
+    ''' Fonction qui renvoie le pire ou le meilleur mouvement en fonction de la valeur de la
+    variable maximizer en utilisant la fonction MaxMin '''
     move = {
         "best": None,
         "worst": None
@@ -204,6 +203,9 @@ timeout = False
 # fonction Alpha-Beta
 def alphaOmega(b: chess.Board, alpha: float, omega: float, saveMovement, depth: int = 3, originalDepth: int = 3,
                maximizer: bool = True, isDeepening: bool = False) -> float:
+    ''' Fonction qui permet de lancer l'algorithme Alpha-Oméga en version normale ou bien
+    Iterative Deepening en fonction de la valeur isDeepening. La variable maximizer
+    permet, en fonction de sa valeur, d'aller chercher la meilleure ou la pire valeur dans l'arbre à la profondeur depth.'''
     global nb_nodes_AO
     nb_nodes_AO += 1
     global timeout
@@ -241,9 +243,10 @@ def alphaOmega(b: chess.Board, alpha: float, omega: float, saveMovement, depth: 
         return omega
 
 
-# fonction qui renvoie le pire ou le meilleur mouvement en utilisant alphaOmega en fonction de la valeur de la
-# variable maximizer
+
 def getMovementFromAlphaOmega(b: chess.Board, depth: int = 3, maximizer: bool = True) -> chess.Move:
+    ''' Fonction qui renvoie le pire ou le meilleur mouvement en fonction de la valeur de la
+    variable maximizer en utilisant alphaOmega  '''
     move = {
         "best": None,
         "worst": None
@@ -252,10 +255,11 @@ def getMovementFromAlphaOmega(b: chess.Board, depth: int = 3, maximizer: bool = 
     return move["best"] if maximizer else move["worst"]
 
 
-# fonction pour faire un iterative deepening sur alpha omega et qui retourne le meilleur ou le pire mouvement en
-# fonction de la valeur de la variable maximizer si la profondeur passée en paramètre est trop élevée pour le temps
-# de recherche stocké dans TIMEOUT alors renvoie un randomMove()
+
 def getMovementIterativeDeepening(b: chess.Board, depth: int = 3, maximizer: bool = True) -> chess.Move:
+    ''' Fonction permettant de faire un iterative deepening sur Alpha-Omega et qui retourne le meilleur ou le pire mouvement en
+    fonction de la valeur de la variable maximizer. Si la profondeur passée en paramètre est trop élevée pour le temps
+    de recherche stocké dans TIMEOUT alors la fonction renvoie un randomMove().'''
     global timeout
     global timeAlphaOmegaStart
     globalMovement: chess.Move = None
@@ -284,31 +288,48 @@ def getMovementIterativeDeepening(b: chess.Board, depth: int = 3, maximizer: boo
 
 def playGameWithTimer(b: chess.Board, movementMethodAmi, movementMethodEnnemi, amiUserDepth: int, ennUserDepth: int,
                       description: str):
+    '''Fonction permettant de lancer la fonction playGame() et d'initialiser les compteurs 
+    de noeuds nb_nodes et nb_nodes_AO à 0. Quand playGame() se termine, affiche la durée de
+    la partie venant d'être jouée.'''
+    global nb_nodes
+    global nb_nodes_AO
+    nb_nodes = 0
+    nb_nodes_AO = 0
     s = time.time()
     res = playGame(b, movementMethodAmi, movementMethodEnnemi, amiUserDepth, ennUserDepth)
     e = time.time()
     print(f"* AMI depth = {amiUserDepth}, ENNEMI depth = {ennUserDepth}")
     displayTime(s, e, description)
-    print("nb_nodes = ",nb_nodes_AO)
     print("*** ", "AMI WIN" if res == "1-0" else "ENNEMI WIN" if res == "0-1" else "EGALITE", " ***")
 
 
 def playGame(b: chess.Board, movementMethodAmi, movementMethodEnnemi, depthAmi: int = 1, depthEnnemi: int = 1):
+    '''Fonction permettant à deux IA de jouer aux échecs. La première est représentée
+    par la variable movementMethodAmi et pourra regarder jusqu'à la profondeur depthAmi
+    pour choisir le meilleur coup.
+    La seconde est représentée par la variable movementMethodEnnemi et pourra regarder
+    jusqu'à la profondeur depthEnnemi pour choisir le pire coup.'''
     while True:
         b.push(movementMethodAmi(b, depthAmi, True))
         # print(b)
         if b.is_game_over():
+            print("nodes AO :", nb_nodes_AO)
+            print("nodes MinMax :", nb_nodes)
             return b.result()
         # print("--------------------")
         b.push(movementMethodEnnemi(b, depthEnnemi, False))
         # print(b)
         # print("--------------------")
         if b.is_game_over():
+            print("nodes AO :", nb_nodes_AO)
+            print("nodes MinMax :", nb_nodes)
             return b.result()
 
 
 # user function : possible
 def displayPossibleMovement(b: chess.Board):
+    '''Fonction permettant d'afficher en ligne de commande
+    l'ensemble des coups possibles.'''
     print("All possible movements : ")
     print("{ ", end="")
     for m in b.generate_legal_moves():
@@ -317,6 +338,8 @@ def displayPossibleMovement(b: chess.Board):
 
 
 def checkMovementValidation(b: chess.Board, move: str):
+    '''Fonction qui permet de vérifier que le coup sélectionné par l'utilisateur
+    est valide.'''
     for m in b.generate_legal_moves():
         if move == m.uci():
             return True
@@ -324,6 +347,7 @@ def checkMovementValidation(b: chess.Board, move: str):
 
 
 def getMovementFromTheUser(b: chess.Board):
+    '''Fonction permettant à l'utilisateur de jouer un coup.'''
     while True:
         displayPossibleMovement(b)
         strM = input("Your movement : ")
@@ -336,6 +360,8 @@ def getMovementFromTheUser(b: chess.Board):
 
 
 def playGameWithUser(b: chess.Board, iAMovementMethod, depthIa: int = 1):
+    '''Fonction permettant à l'utilisateur de jouer contre une IA. iAMovementMethod
+    représente l'IA contre laquelle l'utilisateur souhaite jouer.'''
     print(b)
     while True:
         b.push(getMovementFromTheUser(b))
@@ -379,19 +405,18 @@ def compareMenu(b: chess.Board, amiDepth: int, ennemiDepth: int):
     print(" 2 - Alpha-Oméga (AMI) VS MinMax (ENNEMI)")
     chosenNumber = int(input("Enter the number corresponding to your choice : "))
     if chosenNumber == 1:
-        # playGameAmiMinMax(b, amiDepth, ennemiDepth)
-        playGameWithTimer(b, getMovementFromMaxMin, getMovementFromAlphaOmega, amiDepth, ennemiDepth,
-                          " Ami est max min , ennemi alpha omega")
+        playGameWithTimer(b, getMovementFromMinMax, getMovementFromAlphaOmega, amiDepth, ennemiDepth,
+                          " Ami est MaxMin , Ennemi Alpha-Omega")
     elif chosenNumber == 2:
-        playGameWithTimer(b, getMovementFromAlphaOmega, getMovementFromMixMan, amiDepth, ennemiDepth,
-                          " Ami est alphaOmega , ennemi minMax ")
-        # playGameEnnemiMinMax(b, amiDepth, ennemiDepth)
+        playGameWithTimer(b, getMovementFromAlphaOmega, getMovementFromMinMax, amiDepth, ennemiDepth,
+                          " Ami est AlphaOmega , Ennemi MinMax ")
     else:
         numberError()
 
 
-# fonction utilisée pour communiquer avec l'utilisateur
+
 def askUser(b: chess.Board):
+    '''Fonction utilisée pour communiquer avec l'utilisateur.'''
     while True:
         b.reset()
         global nb_nodes
@@ -402,15 +427,14 @@ def askUser(b: chess.Board):
         chosenNumber = int(input("Enter the number corresponding to your choice : "))
         amiDepth, ennemiDepth = depthChoice()
         if chosenNumber == 1:
-            playGameWithTimer(b, getMovementFromMixMan, getMovementFromMixMan, amiDepth, ennemiDepth,
-                              " MaxMin vs MaxMin " )
+            playGameWithTimer(b, getMovementFromMinMax, getMovementFromMinMax, amiDepth, ennemiDepth,
+                              " MaxMin VS MaxMin " )
         elif chosenNumber == 2:
             playGameWithTimer(b, getMovementFromAlphaOmega, getMovementFromAlphaOmega, amiDepth, ennemiDepth,
-                              " Alpha - Omega ")
+                              " Alpha - Omega VS Alpha - Omega ")
         elif chosenNumber == 3:
             playGameWithTimer(b,getMovementIterativeDeepening,getMovementIterativeDeepening,amiDepth,ennemiDepth,
                               " Alpha - Omega Iterative Deepening ")
-        #     playGameOnAOIDTest(b, amiDepth, ennemiDepth)
         elif chosenNumber == 4:
             compareMenu(b, amiDepth, ennemiDepth)
         else:
@@ -419,27 +443,4 @@ def askUser(b: chess.Board):
 
 if __name__ == '__main__':
     board = chess.Board()
-    # playGameWithUser(board, getMovementFromAlphaOmega, 1)
-    #askUser(board)
-    nb_nodes = 0
-    # playGameWithTimer(board, getMovementFromMixMan, getMovementFromMixMan, 2,2 ,
-    #                   " It is a max min  battle")
-    # print(nb_nodes)
-    #
-    # board.reset()
-    nb_nodes_AO = 0
-    playGameWithTimer(board, getMovementFromAlphaOmega, getMovementFromMixMan, 1, 1,
-                      " Alpha Omega VS minMax ")
-    print("nodes AO :", nb_nodes_AO)
-    print("nodes MinMax :", nb_nodes)
-    # deroulementRandom(board)
-    ## EXO 1 test:
-    # possibleGamesTest(board)
-    # EXO 2 test :
-    # playGameTest(board)
-    # print("nb_nodes =", nb_nodes)
-    # board.reset()
-    ## EXO 3
-    # playGameOnAOTest(board)
-    # print("nb_nodesAO =", nb_nodes_AO)
-    ## my test
+    askUser(board)
