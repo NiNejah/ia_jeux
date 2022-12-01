@@ -244,8 +244,6 @@ def alphaOmega(b: chess.Board, alpha: float, omega: float, saveMovement, depth: 
 # fonction qui renvoie le pire ou le meilleur mouvement en utilisant alphaOmega en fonction de la valeur de la
 # variable maximizer
 def getMovementFromAlphaOmega(b: chess.Board, depth: int = 3, maximizer: bool = True) -> chess.Move:
-    global nb_nodes_AO
-    nb_nodes_AO += 1
     move = {
         "best": None,
         "worst": None
@@ -258,11 +256,9 @@ def getMovementFromAlphaOmega(b: chess.Board, depth: int = 3, maximizer: bool = 
 # fonction de la valeur de la variable maximizer si la profondeur passée en paramètre est trop élevée pour le temps
 # de recherche stocké dans TIMEOUT alors renvoie un randomMove()
 def getMovementIterativeDeepening(b: chess.Board, depth: int = 3, maximizer: bool = True) -> chess.Move:
-    global nb_nodes_AO
     global timeout
     global timeAlphaOmegaStart
     globalMovement: chess.Move = None
-    nb_nodes_AO += 1
     moves = {
         "best": None,
         "worst": None,
@@ -334,11 +330,11 @@ def getMovementFromTheUser(b: chess.Board):
             userMovement = b.parse_uci(strM)
             return userMovement
         else:
-            print("Enter a fucking good movement ! ")
+            print("Enter a good movement ! ")
             continue
 
 
-def playGameWithUser(b: chess.Board, movementMethod, depthIa: int = 1):
+def playGameWithUser(b: chess.Board, iAMovementMethod, depthIa: int = 1):
     print(b)
     while True:
         b.push(getMovementFromTheUser(b))
@@ -348,7 +344,7 @@ def playGameWithUser(b: chess.Board, movementMethod, depthIa: int = 1):
             return b.result()
         print("--------------------")
         print("<<<< IA move >>>>")
-        b.push(movementMethod(b, depthIa, False))
+        b.push(iAMovementMethod(b, depthIa, False))
         print(b)
         print("--------------------")
         if b.is_game_over():
@@ -416,8 +412,19 @@ def askUser(b: chess.Board):
 
 if __name__ == '__main__':
     board = chess.Board()
-    playGameWithUser(board, getMovementFromAlphaOmega, 1)
-    # askUser(board)
+    # playGameWithUser(board, getMovementFromAlphaOmega, 1)
+    #askUser(board)
+    nb_nodes = 0
+    # playGameWithTimer(board, getMovementFromMixMan, getMovementFromMixMan, 2,2 ,
+    #                   " It is a max min  battle")
+    # print(nb_nodes)
+    #
+    # board.reset()
+    nb_nodes_AO = 0
+    playGameWithTimer(board, getMovementFromAlphaOmega, getMovementFromMixMan, 1, 1,
+                      " Alpha Omega VS minMax ")
+    print("nodes AO :", nb_nodes_AO)
+    print("nodes MinMax :", nb_nodes)
     # deroulementRandom(board)
     ## EXO 1 test:
     # possibleGamesTest(board)
@@ -428,3 +435,4 @@ if __name__ == '__main__':
     ## EXO 3
     # playGameOnAOTest(board)
     # print("nb_nodesAO =", nb_nodes_AO)
+    ## my test
