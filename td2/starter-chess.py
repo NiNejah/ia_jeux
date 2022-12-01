@@ -277,7 +277,7 @@ def getMovementIterativeDeepening(b: chess.Board, depth: int = 3, maximizer: boo
         alphaOmega(b, -inf, inf, moves, depth + d, depth + d, maximizer, True)
         if timeout:
             if globalMovement is not None:
-                print("---- change the move ment to", globalMovement.from_square, "->", globalMovement.to_square,
+                print("---- change the movement to", globalMovement.from_square, "->", globalMovement.to_square,
                       ":in depth = ",
                       depth + d - 1)
                 return globalMovement
@@ -293,6 +293,7 @@ def playGameWithTimer(b: chess.Board, movementMethodAmi, movementMethodEnnemi, a
     e = time.time()
     print(f"* AMI depth = {amiUserDepth}, ENNEMI depth = {ennUserDepth}")
     displayTime(s, e, description)
+    print("nb_nodes = ",nb_nodes_AO)
     print("*** ", "AMI WIN" if res == "1-0" else "ENNEMI WIN" if res == "0-1" else "EGALITE", " ***")
 
 
@@ -312,7 +313,7 @@ def playGame(b: chess.Board, movementMethodAmi, movementMethodEnnemi, depthAmi: 
 
 # user function : possible
 def displayPossibleMovement(b: chess.Board):
-    print("All possible Movements : ")
+    print("All possible movements : ")
     print("{ ", end="")
     for m in b.generate_legal_moves():
         print(m.uci(), end=", ")
@@ -329,12 +330,12 @@ def checkMovementValidation(b: chess.Board, move: str):
 def getMovementFromTheUser(b: chess.Board):
     while True:
         displayPossibleMovement(b)
-        strM = input("your movement : ")
+        strM = input("Your movement : ")
         if checkMovementValidation(b, strM):
             userMovement = b.parse_uci(strM)
             return userMovement
         else:
-            print("Enter a fucking good movement ! ")
+            print("This is not a valid movement ! ")
             continue
 
 
@@ -342,7 +343,7 @@ def playGameWithUser(b: chess.Board, movementMethod, depthIa: int = 1):
     print(b)
     while True:
         b.push(getMovementFromTheUser(b))
-        print("<<<< user move >>>> ")
+        print("<<<< User move >>>> ")
         print(b)
         if b.is_game_over():
             return b.result()
@@ -371,10 +372,10 @@ def depthChoice():
 
 
 def mainMenu():
-    print(" 1 - Using MinMax algo.")
-    print(" 2 - Using Alpha Omega algo.")
-    print(" 3 - Using Alpha Omega Iterative Deepening algo.")
-    print(" 4 - Comparing the two algo.")
+    print(" 1 - Using MinMax algorithm.")
+    print(" 2 - Using Alpha Omega algorithm.")
+    print(" 3 - Using Alpha Omega Iterative Deepening algorithm.")
+    print(" 4 - Comparing the two algorithms.")
 
 
 def compareMenu(b: chess.Board, amiDepth: int, ennemiDepth: int):
@@ -383,7 +384,7 @@ def compareMenu(b: chess.Board, amiDepth: int, ennemiDepth: int):
     chosenNumber = int(input("Enter the number corresponding to your choice : "))
     if chosenNumber == 1:
         # playGameAmiMinMax(b, amiDepth, ennemiDepth)
-        playGameWithTimer(b, getMovementFromMixMan, getMovementFromAlphaOmega, amiDepth, ennemiDepth,
+        playGameWithTimer(b, getMovementFromMaxMin, getMovementFromAlphaOmega, amiDepth, ennemiDepth,
                           " Ami est max min , ennemi alpha omega")
     elif chosenNumber == 2:
         playGameWithTimer(b, getMovementFromAlphaOmega, getMovementFromMixMan, amiDepth, ennemiDepth,
@@ -397,16 +398,22 @@ def compareMenu(b: chess.Board, amiDepth: int, ennemiDepth: int):
 def askUser(b: chess.Board):
     while True:
         b.reset()
+        global nb_nodes
+        nb_nodes = 0
+        global nb_nodes_AO
+        nb_nodes_AO = 0
         mainMenu()
         chosenNumber = int(input("Enter the number corresponding to your choice : "))
         amiDepth, ennemiDepth = depthChoice()
         if chosenNumber == 1:
             playGameWithTimer(b, getMovementFromMixMan, getMovementFromMixMan, amiDepth, ennemiDepth,
-                              " It is a max min  battle")
+                              " MaxMin vs MaxMin " )
         elif chosenNumber == 2:
             playGameWithTimer(b, getMovementFromAlphaOmega, getMovementFromAlphaOmega, amiDepth, ennemiDepth,
                               " Alpha - Omega ")
-        # elif chosenNumber == 3:
+        elif chosenNumber == 3:
+            playGameWithTimer(b,getMovementIterativeDeepening,getMovementIterativeDeepening,amiDepth,ennemiDepth,
+                              " Alpha - Omega Iterative Deepening ")
         #     playGameOnAOIDTest(b, amiDepth, ennemiDepth)
         elif chosenNumber == 4:
             compareMenu(b, amiDepth, ennemiDepth)
@@ -416,8 +423,8 @@ def askUser(b: chess.Board):
 
 if __name__ == '__main__':
     board = chess.Board()
-    playGameWithUser(board, getMovementFromAlphaOmega, 1)
-    # askUser(board)
+    #playGameWithUser(board, getMovementFromAlphaOmega, 1)
+    askUser(board)
     # deroulementRandom(board)
     ## EXO 1 test:
     # possibleGamesTest(board)
